@@ -76,20 +76,39 @@ int demanda( int * vec_city, int num_city){
     return maior;
 }
 
-int trucks(int * trucks, int num_city, int * vec_city, int maior){
-    int i = 2, capacity_truck, demandaFinal;
-        demandaFinal = vec_city[num_city];
+int trucks(int * vec_trucks, int num_city, int * vec_city, int maior,int repetir){
+    int i = 2,j, capacity_truck, demandaFinal;
+    demandaFinal = vec_city[num_city];
+    if(repetir==0){
         while(1){
             if(demandaFinal%i == 0){
-                if(maior > (demandaFinal/i) )
-                    capacity_truck = demandaFinal;
-                else
-                    capacity_truck = demandaFinal/i;
-                break;
+                if(maior > (demandaFinal/i) ){
+                    if(i==2)
+                        capacity_truck = demandaFinal;
+                    else
+                        capacity_truck = demandaFinal/(i-1);
+                    break;
+                }else{
+                    i++;
+                }
             }
         }
+    } else {
+        i = repetir;
+        while(1){
+            if(demandaFinal%i == 0){
+                capacity_truck = demandaFinal/i;
+                break;
+            }else{
+                i--;
+            }
+        }
+        i++;
+    }
 
-    return capacity_truck;
+    for(j=0;j<=i;j++)
+        vec_trucks[j] = capacity_truck;
+    return i-1;
 }
 
 
