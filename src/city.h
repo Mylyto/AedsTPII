@@ -1,6 +1,7 @@
 #ifndef CITY_H
 #define CITY_H
 typedef struct{
+	unsigned int id;
 	unsigned int requirements;
 	unsigned char met_requirements;
 }City;

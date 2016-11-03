@@ -7,6 +7,6 @@ typedef struct{
 }Path;
 void initPath(Path*,City*,unsigned int);
 void forwardRoute(Path*);
-unsigned int getSize(Path*);
+unsigned int getSize(Path);
 City getNextCity(Path*);
 #endif

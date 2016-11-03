@@ -2,48 +2,55 @@
 #include <stdlib.h>
 
 #define NMAX 101
-int a=0;
+//int a=0;
 
+//Função que auxilia permuta informando tamanho da matriz
 unsigned long int Fatorial(unsigned long int n){
     if(n==0 || n==1)
     return 1;
     return n*Fatorial(n-1);
 }
 
-void permuta(int nivel, int * n, int qtd_termos, int num_city, int *** vec_exit) {
-        int i, j, parada = 0, *vec_temp;
-        vec_temp = (int *)malloc((qtd_termos+1)*sizeof(int));
-        if (nivel<=qtd_termos) {
+//Função que permuta as possibilidades
+//Parametros:
+//nivel: iteradora entre niveis de casas decimais usadas
+//qtd_termos: x em P(n,x)
+//num_city: n em P(n,x)
+//vec_exit: matriz resultante
+void permuta(int nivel, int * n, int qtd_termos, int num_city, int *** vec_exit, int *k) {
+        int i, j, parada = 0, *vec_temp;//Variaveis iteradoras, sinal para parar,vetor temporario
+        vec_temp = (int *)malloc((qtd_termos+1)*sizeof(int));//alocando espaço para cada linha da matriz tendo base no numero de casas decimais max (qtd_termos)
+        if (nivel<=qtd_termos) {	//"Enquanto" iterador nivel estiver no intervalo 1<->qtd_termos
             for (i=1; i<=num_city; i++) {
                  n[nivel]=i;
-                 permuta(nivel+1, n, qtd_termos, num_city, vec_exit);
+                 permuta(nivel+1, n, qtd_termos, num_city, vec_exit, k);	//Recursão
             }
-        } else {
-             for (i=1; i<=qtd_termos; i++) {
+        } else {	//Quando Recursão chegar ao fim
+             for (i=1; i<=qtd_termos; i++) {	//Conferir se há repetiçoes
                   for (j=1; j<=qtd_termos; j++) {
                        if((n[i]==n[j])&&(i != j)){
-                            parada = 666;
+                            parada = 666;//Se tem repitido acionar parada
                             break;
                        }
                    }
-                }
-                if(parada != 666){
+                }//Fim de Conferir repetiçoes
+                if(parada != 666){	//Se não houve repetiçoes
                      for (i=1; i<=qtd_termos; i++) {
                             vec_temp[i] =  n[i];
                      }
-                     vec_temp[0] = 0;
+                     vec_temp[0] = 0;//???
                      vec_temp[i] = 0;
                      vec_temp[i+1] = 666;
-                     (*vec_exit)[a] = (int *)malloc((qtd_termos + 1)*sizeof(int));
+                     (*vec_exit)[*k] = (int *)malloc((qtd_termos + 1)*sizeof(int)); //
                      for(j = 0; j <= i+1; j++){
-                        (*vec_exit)[a][j] = vec_temp[j];
+                        (*vec_exit)[*k][j] = vec_temp[j];
                      }
-                     a++;
+                     (*k)++;
                 }
         }
 }
 void geradorDistancias(int num_city, int *** vec_distancias){
-    int i, j, aleatorio;
+    int i, j;
     for(i=0;i<num_city;i++){
         (*vec_distancias)[i] = (int*)malloc(num_city*sizeof(int));
         for(j=0;j<num_city;j++){
@@ -72,7 +79,7 @@ int demanda( int * vec_city, int num_city){
             maior = vec_city[i];
         }
     }
-    vec_city[i] = demandaFinal;
+    vec_city[i] = demandaFinal;	//Pq dar valor para um container q sera apagado agora?
     return maior;
 }
 
@@ -111,9 +118,8 @@ int trucks(int * vec_trucks, int num_city, int * vec_city, int maior,int repetir
     return i-1;
 }
 
-
 int main(void) {
-        int i, j, qtd_termos = 2, C = 0, teste;
+        int i, j, k = 0, qtd_termos = 2, C = 0;
         int num_city = 4;
         int n[NMAX];
         int **vec_exit;
@@ -121,7 +127,8 @@ int main(void) {
         int *vec_city;
         int maior;
         int *vec_trucks;
-
+	
+	//Chama Permuta
        for(i = 1; i<=qtd_termos; i++){
             C = C + Fatorial(num_city)/Fatorial(num_city-i);
        }
@@ -130,7 +137,7 @@ int main(void) {
                 n[i]=-1;
         }
         for(i = 1; i<=qtd_termos; i++){
-            permuta(1, n, i, num_city, &vec_exit);
+            permuta(1, n, i, num_city, &vec_exit, &k);
         }
         for(i = 0; i<C; i++){
             for(j=0; j < C; j++){
@@ -143,7 +150,7 @@ int main(void) {
         printf("----%d\n", C);
 
 
-
+	//GeradorDistancia
         vec_distancias = (int**)malloc(num_city*sizeof(int));
         geradorDistancias(num_city, &vec_distancias);
         for(i=0; i<num_city; i++){
@@ -154,7 +161,7 @@ int main(void) {
         }
 
         printf("\n");
-
+	//demanda
         vec_city = (int*)malloc(num_city*sizeof(int));
         maior = demanda(vec_city, num_city);
         for(i=0;i<=num_city;i++){
@@ -163,9 +170,9 @@ int main(void) {
         printf("\n ---%d \n", maior);
 
         printf("\n");
-
+	//trucks
         vec_trucks = (int*)malloc(num_city*sizeof(int) + sizeof(int));
-        trucks(vec_trucks, num_city, vec_city, maior);
+        trucks(vec_trucks, num_city, vec_city, maior, 0);
 
 
 }

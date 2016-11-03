@@ -6,9 +6,40 @@
 #include "truck.h"
 #include "generator.h"
 #include "citystack.h"
+//teste para TAD truck
+START_TEST(test_truck_create){
+	Truck t;
+	Path p, p1;
+	City c[4], c1[4];
+	int i;
+	unsigned int cap = 15, diff = 0;
+	for (i = 0; i < 4; i++) {
+		initCity(&c[i],4+i);
+		initCity(&c1[i],9+i);
+	}
+	initPath(&p,c,i);
+	initPath(&p1,c1,i);
+	initTruck(&t,p,cap);
+	ck_assert_msg(getCapacity(t)==cap,"Getter de capacity retornando numero diferente do parametro passado na inicialização");
+	for (i = 0; i < getSize(getRoute(t)); i++) {
+		if(getRoute(t).cities.cities[i].id != p.cities.cities[i].id){
+			diff += 1;
+		}
+	}
+	ck_assert_msg((!diff),"Getter de route retornando numero diferente do parametro passado na inicialização");
+	diff = 0;
+	setRoute(&t,p1);
+	for (i = 0; i < getSize(getRoute(t)); i++) {
+		if(getRoute(t).cities.cities[i].id != p.cities.cities[i].id){
+			diff += 1;
+		}
+	}
+	ck_assert_msg((!diff),"mudança de rota falhou!");
 
-START_TEST(test_city_create)
-{
+}
+END_TEST
+//teste para TAD city
+START_TEST(test_city_create){
 	City c;
 	initCity(&c,5);
 	ck_assert_int_eq(getRequirements(c),5);
@@ -17,8 +48,8 @@ START_TEST(test_city_create)
 	ck_assert_msg(getMetRequirements(c) == 1, "Was expecting met_requirements = 1, but received met_requirements = %d",getMetRequirements(c));
 }
 END_TEST
-START_TEST(test_citystack_create)
-{
+//teste para TAD citystack
+START_TEST(test_citystack_create){
 	CityStack cs;
 	int i;
 	City c[5];
@@ -35,9 +66,9 @@ START_TEST(test_citystack_create)
 		pop(&cs,&c[i]);
 		ck_assert_msg(ctemp.requirements==c[i].requirements,"Failed during CityStack popping. Value is different from expected");
 	}
-	unsigned int top;
-}
+	unsigned int top;}
 END_TEST
+//teste para TAD path
 START_TEST(test_path_create)
 {
 	City c[4];
@@ -47,7 +78,7 @@ START_TEST(test_path_create)
 	}
 	Path p;
 	initPath(&p,c,4);
-	ck_assert_msg(getSize(&p)==4,"Expected size 4, received %d",getSize(&p));
+	ck_assert_msg(getSize(p)==4,"Expected size 4, received %d",getSize(p));
 	ck_assert_msg(getNextCity(&p).requirements == c[0].requirements ,"Expected c[0] %d and received %d", c[0].requirements, getNextCity(&p).requirements);
 	forwardRoute(&p);
 	ck_assert_msg(getNextCity(&p).requirements == c[1].requirements ,"Expected c[1 %d and received %d", c[1].requirements, getNextCity(&p).requirements);

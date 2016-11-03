@@ -11,8 +11,8 @@ void forwardRoute(Path *p){
 	City c;
 	pop(&p->cities,&c);
 }
-unsigned int getSize(Path *p){
-	return p->size;
+unsigned int getSize(Path p){
+	return p.size;
 }
 City getNextCity(Path *p){
 	return p->cities.cities[(p->cities.top-1)];
