@@ -14,8 +14,8 @@ START_TEST(test_truck_create){
 	int i;
 	unsigned int cap = 15, diff = 0;
 	for (i = 0; i < 4; i++) {
-		initCity(&c[i],4+i);
-		initCity(&c1[i],9+i);
+		initCity(&c[i]);
+		initCity(&c1[i]);
 	}
 	initPath(&p,c,i);
 	initPath(&p1,c1,i);
@@ -41,8 +41,8 @@ END_TEST
 //teste para TAD city
 START_TEST(test_city_create){
 	City c;
-	initCity(&c,5);
-	ck_assert_int_eq(getRequirements(c),5);
+	initCity(&c);
+	ck_assert_int_eq(getRequirements(c),c.requirements);
 	ck_assert_msg(getMetRequirements(c) == 0, "Was expecting met_requirements = 0, but received met_requirements = %d",getMetRequirements(c));
 	meetRequirements(&c);
 	ck_assert_msg(getMetRequirements(c) == 1, "Was expecting met_requirements = 1, but received met_requirements = %d",getMetRequirements(c));
@@ -56,7 +56,7 @@ START_TEST(test_citystack_create){
 	City ctemp;
 	initCityStack(&cs);
 	for (i = 0; i < 5; i++) {
-		initCity(&c[i],i);
+		initCity(&c[i]);
 		ck_assert_msg(size(&cs)==i,"Expected CityStack size %d Received %d",i,size(&cs) );
 		push(&cs,c[i]);
 	}
@@ -66,7 +66,7 @@ START_TEST(test_citystack_create){
 		pop(&cs,&c[i]);
 		ck_assert_msg(ctemp.requirements==c[i].requirements,"Failed during CityStack popping. Value is different from expected");
 	}
-	unsigned int top;}
+}
 END_TEST
 //teste para TAD path
 START_TEST(test_path_create)
@@ -74,7 +74,7 @@ START_TEST(test_path_create)
 	City c[4];
 	int i;
 	for (i = 0; i < 4; i++) {
-		initCity(&c[i],4+i);
+		initCity(&c[i]);
 	}
 	Path p;
 	initPath(&p,c,4);

@@ -10,7 +10,7 @@ unsigned long int Fatorial(unsigned long int n){
     return 1;
     return n*Fatorial(n-1);
 }
-
+/*
 int* encontraMelhorRota(Generator *gen){
 	int i, j;
 	unsigned int last_city, current_city = gen->permutations[0][0], acumulator = 0, comparator = 0, melhor = 0;
@@ -35,6 +35,7 @@ int* encontraMelhorRota(Generator *gen){
 	}
 	return gen->permutations[melhor];
 }
+*/
 //Função que permuta as possibilidades
 //Parametros:
 //nivel: iteradora entre niveis de casas decimais usadas
