@@ -11,6 +11,30 @@ unsigned long int Fatorial(unsigned long int n){
     return n*Fatorial(n-1);
 }
 
+int* encontraMelhorRota(Generator *gen){
+	int i, j;
+	unsigned int last_city, current_city = gen->permutations[0][0], acumulator = 0, comparator = 0, melhor = 0;
+	for (i = 1; i < gen->number_of_cities; i++){
+		last_city = current_city;
+		current_city = gen->permutations[0][i];
+		acumulator += gen->distances[last_city][current_city];
+
+	}
+	comparator = acumulator;	//Atribui a comparator um valor inicial como se a primeira permutação fosse a melhor
+	for (i = 1; i < Fatorial(gen->number_of_cities); i++) {
+		acumulator = 0;
+		for (j = 1; j < gen->number_of_cities; j++) {
+			last_city = gen->permutations[i][j-1];
+			current_city = gen->permutations[i][j];
+			acumulator += gen->distances[last_city][current_city];
+		}
+		if(acumulator < comparator){
+			comparator = acumulator;
+			melhor = i;
+		}
+	}
+	return gen->permutations[melhor];
+}
 //Função que permuta as possibilidades
 //Parametros:
 //nivel: iteradora entre niveis de casas decimais usadas
