@@ -3,15 +3,32 @@
 
 #include "generator.h"
 
+//Iniciar GERADOR
+//IDEIA: GERAR AO INICAR O GERADOR AS CIDADES, A LISTA DE CIADAES, A MATRIZ DE DISTANCIAS
+// A MATRIZ DE COMBINAÇÕES // GERAR O NUMERO DE CAMINHÕES
+// E JÁ GERAR A MELHOR ROTA DE TAL FORMA QUE O NUM DE CAMINHÕES SEJA
 
-void initGenerator(TGenerator* generator, unsigned int num_city){
+void initGenerator(TGenerator* generator, TListCity* listCity, TListRoute* listRoute, TListTruck* listTruck, unsigned int num_city){
     unsigned int i, j, possibility;
+    TCity cidade;
 
     generator->num_city = num_city;
     generator->num_truck = 1;
+    generator->capacity_truck =0;
     generator->aux = 0;
+
     for(i=0;i<generator->num_city;i++){
-        for(j=0;j<generator->num_city;j++){
+        initCity(&cidade, i);
+        printf("demanda: %d ", cidade.demand);
+        printf("\n");
+        insertListCity(listCity, &cidade);
+        printf("somatorio: %d \n", listCity->sumDemand);
+        printf("maior: %d \n", listCity->greater_Demand);
+        printf("quantidade: %d \n", listCity->topo);
+    }
+
+    for(i=0;i<generator->num_city+1;i++){
+        for(j=0;j<generator->num_city+1;j++){
             if(i<j)
                 generator->array_distances[i][j] = rand()%100+1;
             else if(i>j)
@@ -22,31 +39,34 @@ void initGenerator(TGenerator* generator, unsigned int num_city){
     }
     possibility = Fatorial(num_city);
     generator->array_combinations = (int**)malloc(possibility*sizeof(int*));
-    for(i=1;i<=num_city;i++){
-        generateCombination(1, generator, i);
-    }
+    //for(i=1;i<=num_city;i++){
+        generateCombination(1, generator, num_city);
+    //}
 
 }
 
 //GERADOR DE CAPACIDADE CO DAMINHÃO
 int generateCapacity(TGenerator* generator, TListCity* listCity, unsigned int condition){
-//CONDITION É PADÃO COMO ZERO
-    unsigned int i = 2,  sumDemand, capacity_Truck, maximum, last;
+//CONDITION É PADRÃO COMO ZERO
+    int i = 1,  sumDemand, capacity_Truck, maximum, lastDivisor;
     sumDemand = listCity->sumDemand; //ṕega o somatório da demanda de todas as cidades.
     maximum = listCity->greater_Demand; // Pega a maior demanda de uma punica ciadade.
     if(condition==0){
          while(1){ // sempre executado
             if(sumDemand%i == 0){ // se o somatorio é divisível por i então
                 if(maximum > (sumDemand/i)){ // se a divisão desse somatório é menor que a maior demanda então
-                    if(i==2) // se forem dois caminhões
-                        capacity_Truck = sumDemand; // a capacidade do caminhão gerará um unico caminhão de capacidade máxima
-                    else
+                    if(i==2){// se forem dois caminhões
+                        capacity_Truck = sumDemand;
+                    } // a capacidade do caminhão gerará um unico caminhão de capacidade máxima
+                    else{
+                        capacity_Truck = sumDemand/lastDivisor;
+                    }
                         // caso contrário a capacidade do caminhão receberá
                         // o ultimo divisor de i cuja o maximum era menor que a demanda dividida por i
-                        capacity_Truck = sumDemand/last;
                     break; // interrompe o loop;
                 }else {
-                    last = i; // caso a maior demanda não seja maior que a demanda dividida por i, esse i é guardado
+                    lastDivisor = i;
+                    i++;// caso a maior demanda não seja maior que a demanda dividida por i, esse i é guardado
                     // e o while continua a rodar;
                 }
             }else {
@@ -66,7 +86,11 @@ int generateCapacity(TGenerator* generator, TListCity* listCity, unsigned int co
             }
         }
     }
-    generator->num_truck = i; // o numero de caminhões é guardada no gerador
+
+    generator->num_truck = sumDemand/capacity_Truck;
+    generator->capacity_truck = capacity_Truck;
+    //VERIFICAR O RETORNO DO I.
+    //generator->capacity_truck = capacity_Truck;
     return capacity_Truck; // Retorna a capacidade de caminhões
 }
 
@@ -146,22 +170,27 @@ unsigned long int Fatorial(unsigned long int n){
     return n*Fatorial(n-1);
 }
 
-int generateRoute(TGenerator* generator, TListTruck* listTruck, TListCity* listCity, TListRoute* listaRota){
-   // TRoute rota;
-    //unsigned int distancia=0, topTruck = listTruck->topo, topCity = listCity->topo, i=0; //topRoute = listaRota->topo;
-    //initRoute(&rota, generator->num_city);
-    //while(topCity>=0){
-     //   if(topCity==0){
-       //     insertCityRoute(&rota, &listCity->city[topCity], 10 );//rota.cities[i] = listCity->city[topCity];
-         //   break;
-        //}
-        //insertCityRoute(&rota, &listCity->city[topCity], 10 );
-        //rota.cities[i] = listCity->city[topCity];
-        //i++;
-        //topCity--;
-   // }
-    //insertRouteList(&listaRota,&rota);
-   // listaRota->route[listaRota->topo] = rota;
+int generateRoute(TGenerator* generator){
+    int i, j;
+	unsigned int last_city, current_city = generator->array_combinations[0][0], acumulator = 0, comparator = 0, melhor = 0;
+	for (i = 0; i < generator->num_city+1; i++){
+		last_city = current_city;
+		current_city = generator->array_combinations[0][i];
+		acumulator += generator->array_distances[last_city][current_city];
+	}
+	comparator = acumulator;	//Atribui a comparator um valor inicial como se a primeira permutação fosse a melhor
+	for (i = 0; i < Fatorial(generator->num_city); i++) {
+		acumulator = 0;
+		for (j = 0; j < generator->num_city+1; j++) {
+			last_city = generator->array_combinations[i][j-1];
+			current_city = generator->array_combinations[i][j];
+			acumulator += generator->array_distances[last_city][current_city];
+		}
+		if(acumulator < comparator){
+			comparator = acumulator;
+			melhor = i;
+		}
+	}
 
-    return 0;
+    return generator->array_combinations[melhor];
 }

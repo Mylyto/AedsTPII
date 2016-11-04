@@ -7,29 +7,21 @@
 #include "generator.h"
 
 int main(){
-    int num = 3, i, j, possibilty=0;
-
+    int num = 5, i, j, possibilty=0, qtd;
+    int *vec;
     TGenerator gerador;
 
-    TCity cidade;
+
     TListCity listaCidade;
     TListTruck listaCaminhao;
     TListRoute listaRota;
 
     initListCity(&listaCidade);
-    for(i=0;i<num;i++){
-        initCity(&cidade, i);
-        printf("demanda: %d ", cidade.demand);
-        printf("\n");
-        insertListCity(&listaCidade, &cidade);
-        printf("somatorio: %d \n", listaCidade.sumDemand);
-        printf("maior: %d \n", listaCidade.greater_Demand);
-        printf("quantidade: %d \n", listaCidade.topo);
-    }
 
-    initGenerator(&gerador, num);
-    for(i=0;i<gerador.num_city;i++){
-        for(j=0;j<gerador.num_city;j++){
+
+    initGenerator(&gerador, &listaCidade, &listaRota, &listaCaminhao, num);
+    for(i=0;i<gerador.num_city+1;i++){
+        for(j=0;j<gerador.num_city+1;j++){
             printf(" %d ", gerador.array_distances[i][j]);
         }
         printf("\n");
@@ -44,8 +36,15 @@ int main(){
         printf("\n");
     }
 
+printf("\nMELHOR ROTA");
+    vec = generateRoute(&gerador);
+    for(i=0;i<num+2;i++)
+        printf(" %d ", vec[i]);
+printf("\n");
+printf("CAPACIDADE Q QUANTIDADE DE CAMINHÕES: ");
 
-    generateRoute(&gerador, &listaCaminhao, &listaCidade, &listaRota);
-    printf("--- %d ", listaRota.topo);
+    qtd = generateCapacity(&gerador, &listaCidade, 0);
+    printf("%d %d %d", qtd, gerador.capacity_truck, gerador.num_truck);
+
     return 0;
 }
