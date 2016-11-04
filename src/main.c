@@ -7,28 +7,26 @@
 #include "generator.h"
 
 int main(){
+    int num = 3, i, j, possibilty=0;
+
     TGenerator gerador;
+
     TCity cidade;
     TListCity listaCidade;
-    TTruck caminhao;
     TListTruck listaCaminhao;
-    TRoute rota;
     TListRoute listaRota;
-    int num = 5, i, j, possibilty=0;
-/*
+
     initListCity(&listaCidade);
     for(i=0;i<num;i++){
         initCity(&cidade, i);
-        printf(" %d ", cidade.demand);
-        printf(" %d ", cidade.ID);
-        printf(" %d ", cidade.visitd);
-        insertListCity(&listaCidade, &cidade);
-    }
+        printf("demanda: %d ", cidade.demand);
         printf("\n");
-        printf(" %d ", listaCidade.greater_Demand);
-        printf(" %d ", listaCidade.sumDemand);
-        printf(" %d ", listaCidade.topo);
-*/
+        insertListCity(&listaCidade, &cidade);
+        printf("somatorio: %d \n", listaCidade.sumDemand);
+        printf("maior: %d \n", listaCidade.greater_Demand);
+        printf("quantidade: %d \n", listaCidade.topo);
+    }
+
     initGenerator(&gerador, num);
     for(i=0;i<gerador.num_city;i++){
         for(j=0;j<gerador.num_city;j++){
@@ -37,14 +35,17 @@ int main(){
         printf("\n");
     }
 
-printf("\n");
     for(i=0;i<gerador.aux;i++){
-        for(j=0;j<num;j++){
-           if(gerador.array_combinations[i][j] == -2)
+        for(j=0;j<num+(num*2);j++){
+          if(gerador.array_combinations[i][j] == -2)
                 break;
             printf(" %d ", gerador.array_combinations[i][j]);
         }
         printf("\n");
     }
+
+
+    generateRoute(&gerador, &listaCaminhao, &listaCidade, &listaRota);
+    printf("--- %d ", listaRota.topo);
     return 0;
 }

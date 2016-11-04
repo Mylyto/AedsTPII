@@ -8,18 +8,20 @@
 #define MAX 1000
 
 typedef struct{
-    unsigned int num_city;
-    unsigned int num_truck;
-    unsigned int aux;
-    unsigned int vectorAux[MAX];
-    unsigned int array_distances[MAX][MAX];
-    unsigned int **array_combinations;
+    unsigned int num_city; //Quarda o numero total de cidadas
+    unsigned int num_truck; // guarda o numero total de caminhões
+    unsigned int aux; // contator 'universa', tipo um top para o arrai combinations
+    unsigned int vectorAux[MAX]; // Vetor auxiliar para contrar as permutações em generateCombinations
+    unsigned int array_distances[MAX][MAX]; // Matriz para gerar e guerdar as distancias entre as cidades;
+    unsigned int **array_combinations; // matriz para guardar todas as combinações possíveis.
+    //unsigned int array_combinations[MAX][MAX] // Matriz usada na permutação de caminhões únicos
 }TGenerator;
 
 void initGenerator(TGenerator* generator, unsigned int num_city);
 int generateCapacity(TGenerator* generator, TListCity* listCity, unsigned int condition);
 unsigned long int Fatorial(unsigned long int n);
-void generateCombination(TGenerator* generator, unsigned int N, unsigned int k);
-int generateRoute(TGenerator* generator, TListTruck* listTruck, TListCity* listCity, TListRoute* listRoute);
+void generateCombination(int nivel, TGenerator* generator, int K);
+//void generateCombination(TGenerator* generator, unsigned int N, unsigned int k); // permutaço de caminhão unico
+int generateRoute(TGenerator* generator, TListTruck* listTruck, TListCity* city, TListRoute* listRoute);
 
 #endif // GENERATOR_H_INCLUDED

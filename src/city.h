@@ -8,12 +8,16 @@ typedef struct{
 	unsigned int ID;
 }TCity;
 
+
+// Uma lista de cidades, por vetor, para já pegar o somatório das cidades
+// Além de já pegar a maior demanda de uma única cidade.
 typedef struct{
     TCity city[MAX];
     unsigned int sumDemand;
     unsigned int greater_Demand;
     unsigned int topo;
 }TListCity;
+
 
 void initCity(TCity* city, unsigned int position);
 void initListCity(TListCity* listCity);
