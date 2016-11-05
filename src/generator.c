@@ -8,69 +8,142 @@
 // A MATRIZ DE COMBINAÇÕES // GERAR O NUMERO DE CAMINHÕES
 // E JÁ GERAR A MELHOR ROTA DE TAL FORMA QUE O NUM DE CAMINHÕES SEJA
 
-void initGenerator(TGenerator* generator, TListCity* listCity, TListRoute* listRoute, TListTruck* listTruck, unsigned int num_city){
-    unsigned int i, j, possibility;
-    TCity cidade;
+void initGenerator(Generator* g, unsigned int n){
+    int i,j,possibility;
+    int *bestRoute;
+    CityStack cs;
+    n-=1;
+    g->number_of_cities = n;
+    g->number_of_combinations = 0;
+    g->number_of_permutations = 0;
+    g->truck_capacity = 0;
+    generateCities(g, &cs);//Gerando as cidades e q=guardando-as na na Stack e no gerador
+    generateDistances(g);//Gerando a Matriz de distancias
+    for(i=0;i<=n;i++)
+        possibility += Fatorial(n)/Fatorial(n-i);//Calculando as possibilidades máximas de alocação de memória
+    g->permutations = (int**)malloc(possibility*sizeof(int*));//Alocando memória suficiente para a matiz de permutações
+    generatePermutation(1, g, n);//gerando recursivamente as permutações recursivamente.
+    generateTrucks(g,&cs,0); // gera a capacidade do caminhão e a quatidade de caminhões
+    for(i=1; i<=3;i++)
+        generateCombinations(g,i);
+    /*bestRoute = generateRoute(g, possibility);
+    for(i=0;i<=g->number_of_cities+(3+g->number_of_trucks);i++){
+        if(bestRoute[i]==-2){
+            break;
+        }else if (i==0){
+            printf("[");
+            printf(" %d ", bestRoute[i]);
+        }else if (bestRoute[i]==0){
+            printf(" %d ", bestRoute[i]);
+            printf("]");
+        }else{
+            printf(" %d ", bestRoute[i]);
+        }
 
-    generator->num_city = num_city;
-    generator->num_truck = 1;
-    generator->capacity_truck =0;
-    generator->aux = 0;
-    generator->aux2 = 0;
+    }
+*/
+}
 
-    for(i=0;i<generator->num_city;i++){
-        initCity(&cidade, i);
-        printf("demanda: %d ", cidade.demand);
-        printf("\n");
-        insertListCity(listCity, &cidade);
-        printf("somatorio: %d \n", listCity->sumDemand);
-        printf("maior: %d \n", listCity->greater_Demand);
-        printf("quantidade: %d \n", listCity->topo);
+//GERA TODAS AS PERMUTAÇÕES
+int generatePermutation(int nivel, Generator* g, int n){
+// nivel, da recursão e K é permutar de quantas casas ex: 3 cidade de K=1 seria [1] [2] [3];
+    int i, j, parada = 0, *vec_temp; // Vetor temporário para auxiliar a bagunça;
+    vec_temp = (int*)malloc((n*2)*sizeof(int)); //Aloca dinâmicamente para usar o vetor auxiliar.
+    if (nivel<=n) {
+        for (i=1; i<=g->number_of_cities; i++) {
+             g->vector_Aux[nivel]=i; // Usa a recursão para gerar numeros para o vetor auxiliar
+             generatePermutation(nivel+1, g, n);
+        }
+    } else {
+         for (i=1; i<=n; i++) {
+              for (j=1; j<=n; j++) {
+                   if((g->vector_Aux[i]==g->vector_Aux[j])&&(i != j)){
+                        //estuda e remove permutações de casa repetidas
+                        parada = 8;
+                        break;
+                   }
+               }
+            }
+            if(parada != 8){ // se não houver numeros repetidos no vetor
+                 for (i=1; i<=n; i++) {
+                        vec_temp[i] =  g->vector_Aux[i]; // o vetor temporario recebe os numeros gerados na recursao
+                 }
+                 vec_temp[0] = 0; // Primeira posição recebe 0 por padrão;
+                 vec_temp[i] = 0; // como se fosse [01230] começa e termina
+                 vec_temp[i+1] = -2; // critério de parada;
+                 //Aloca o vetor de vetores da matriz de combinações
+                 g->permutations[g->number_of_permutations] = (int *)malloc((n*3)*sizeof(int));
+                 for(j = 0; j <= i+1; j++){ // A martiz de combinações recebe todos os numeros gerados na recursão
+                    g->permutations[g->number_of_permutations][j] = vec_temp[j];
+                    printf(" %d ", g->permutations[g->number_of_permutations][j]);
+                 }
+                 free(vec_temp); // Desaloca o vetor temporario;
+                 g->number_of_permutations++; // incrementa o contador 'universal'
+                 printf("\n");
+            }
+        }
+}
+
+void generateCities(Generator* g, CityStack* cs){
+    City c;
+    int i;
+    initCityStack(cs);
+    g->cities = (City*)malloc(g->number_of_cities*sizeof(City));
+    for(i=0;i<g->number_of_cities;i++){
+        initCity(&c);
+        push(cs, c);
+    }
+    for(i=0;i<g->number_of_cities;i++){
+        g->cities[i] = cs->cities[i];
+        printf("\nDemanda: %d ID: %d meet: %d\n" ,g->cities[i].requirements, g->cities[i].id, g->cities[i].met_requirements );
     }
 
-    for(i=0;i<generator->num_city+1;i++){
-        for(j=0;j<generator->num_city+1;j++){
+}
+
+void generateDistances(Generator* g){
+    int i, j;
+    //gerar Distancias espelhadas
+    for(i=0;i<=g->number_of_cities;i++){
+        for(j=0;j<=g->number_of_cities;j++){
             if(i<j)
-                generator->array_distances[i][j] = rand()%100+1;
+                g->distances[i][j] = rand()%100+1;
             else if(i>j)
-                generator->array_distances[i][j] = generator->array_distances[j][i];
+                g->distances[i][j] = g->distances[j][i];
             else // if (i==j)
-                generator->array_distances[i][j] = 0;
+                g->distances[i][j] = 0;
         }
     }
-    possibility = Fatorial(num_city);
-    generator->array_combinations = (int**)malloc(possibility*sizeof(int*));
-    //for(i=3;i<=num_city;i++){
-        generateCombination(1, generator, num_city);
-    //}
+    for(i=0;i<=g->number_of_cities;i++){
+        for(j=0;j<=g->number_of_cities;j++){
+               printf(" %d " , g->distances[i][j]);
+        }
+        printf("\n");
+    }
 
 }
 
 //GERADOR DE CAPACIDADE CO DAMINHÃO
-int generateCapacity(TGenerator* generator, TListCity* listCity, unsigned int condition){
+void generateTrucks(Generator* g, CityStack* cs, int condition){
 //CONDITION É PADRÃO COMO ZERO
     int i = 1,  sumDemand, capacity_Truck, maximum, lastDivisor;
-    sumDemand = listCity->sumDemand; //ṕega o somatório da demanda de todas as cidades.
-    maximum = listCity->greater_Demand; // Pega a maior demanda de uma punica ciadade.
+    sumDemand = cs->endRequirements; //ṕega o somatório da demanda de todas as cidades.
+    maximum = cs->greater_Requirements; // Pega a maior demanda de uma punica ciadade.
     if(condition==0){
          while(1){ // sempre executado
             if(sumDemand%i == 0){ // se o somatorio é divisível por i então
                 if(maximum > (sumDemand/i)){ // se a divisão desse somatório é menor que a maior demanda então
-                    if(i==2){// se forem dois caminhões
-                        capacity_Truck = sumDemand;
-                    } // a capacidade do caminhão gerará um unico caminhão de capacidade máxima
-                    else{
-                        capacity_Truck = sumDemand/lastDivisor;
-                    }
-                        // caso contrário a capacidade do caminhão receberá
+                    if(i==2)// se forem dois caminhões
+                        capacity_Truck = sumDemand; // a capacidade do caminhão gerará um unico caminhão de capacidade máxima
+                    else
+                        capacity_Truck = sumDemand/lastDivisor;// caso contrário a capacidade do caminhão receberá
                         // o ultimo divisor de i cuja o maximum era menor que a demanda dividida por i
                     break; // interrompe o loop;
-                }else {
+                }else{
                     lastDivisor = i;
                     i++;// caso a maior demanda não seja maior que a demanda dividida por i, esse i é guardado
                     // e o while continua a rodar;
                 }
-            }else {
+            }else{
                 i++;
             }
         }
@@ -87,139 +160,103 @@ int generateCapacity(TGenerator* generator, TListCity* listCity, unsigned int co
             }
         }
     }
-
-    generator->num_truck = sumDemand/capacity_Truck;
-    generator->capacity_truck = capacity_Truck;
-    //VERIFICAR O RETORNO DO I.
-    //generator->capacity_truck = capacity_Truck;
-    return generator->num_truck; // Retorna a quantidade de caminhões
+    g->number_of_trucks = sumDemand/capacity_Truck;
+    g->truck_capacity = capacity_Truck;
+    printf("\ntrucks: %d capacity: %d\n", g->number_of_trucks, g->truck_capacity);
 }
 
 
-//GERA TODAS AS COMBINAÇÕES
-void generateCombination(int nivel, TGenerator* generator, int K){
-// nivel, da recursão e K é permutar de quantas casas ex: 3 cidade de K=1 seria [1] [2] [3];
-    int i, j, parada = 0, *vec_temp; // Vetor temporário para auxiliar a bagunça;
-    vec_temp = (int*)malloc((K*2)*sizeof(int)); //Aloca dinâmicamente para usar o vetor auxiliar.
-    if (nivel<=K) {
-        for (i=1; i<=generator->num_city; i++) {
-             generator->vectorAux[nivel]=i; // Usa a recursão para gerar numeros para o vetor auxiliar
-             generateCombination(nivel+1, generator, K);
-        }
-    } else {
-         for (i=1; i<=K; i++) {
-              for (j=1; j<=K; j++) {
-                   if((generator->vectorAux[i]==generator->vectorAux[j])&&(i != j)){
-                        //estuda e remove permutações de casa repetidas
-                        parada = 8;
-                        break;
-                   }
-               }
-            }
-            if(parada != 8){ // se não houver numeros repetidos no vetor
-                 for (i=1; i<=K; i++) {
-                        vec_temp[i] =  generator->vectorAux[i]; // o vetor temporario recebe os numeros gerados na recursao
-                 }
-                 vec_temp[0] = 0; // Primeira posição recebe 0 por padrão;
-                 vec_temp[i] = 0; // como se fosse [01230] começa e termina
-                 vec_temp[i+1] = -2; // critério de parada;
-                 //Aloca o vetor de vetores da matriz de combinações
-                 generator->array_combinations[generator->aux] = (int *)malloc((K*3)*sizeof(int));
-                 for(j = 0; j <= i+1; j++){ // A martiz de combinações recebe todos os numeros gerados na recursão
-                    generator->array_combinations[generator->aux][j] = vec_temp[j];
-                 }
-                 free(vec_temp); // Desaloca o vetor temporario;
-                 generator->aux++; // incrementa o contador 'universal'
-            }
-        }
-}
 
 
-int mover(TGenerator* generator, int last ){
+
+void generateCombinations(Generator* g, int last){
     //Last é usado para dize quantos caminhões serão. Ex, last = 2 quer dizer que deve haver 3 zeros 010230
     // Mas last depende de um vetor nessa primeira implmentação, ou seja executa a sua primeira versão com 1
     // e guarda a matriz, executa a sua segunda função com 2 caminhões e gusrda a sua matriz
     // executa a sua função com a matriz guardada na ultima excução e gera uma nova matriz.
     int i,j,l,  aux, cont=0, position=0, condition=0;
+    g->number_of_combinations=0;
         if(last == 1){//Primeira Execução
-            for(l=0;l<generator->aux;l++){
-                for(i=0;i<=generator->num_city+3;i++){
+            for(l=0;l<g->number_of_permutations;l++){
+                for(i=0;i<=g->number_of_cities+3;i++){
                     if(i<2)
-                        generator->vectorAux[i] = generator->array_combinations[l][i]; //copia o vetor passado normalmente no vertor auxilixar
+                        g->vector_Aux[i] = g->permutations[l][i]; //copia o vetor passado normalmente no vertor auxilixar
                      else if(i==2)
-                         generator->vectorAux[i] = 0; // insere 0 na terceira posição
+                         g->vector_Aux[i] = 0; // insere 0 na terceira posição
                      else
-                        generator->vectorAux[i] = generator->array_combinations[l][i-1]; // na quarta posição em diante recebe o vetor passado -1, pois ele está descolado
+                        g->vector_Aux[i] = g->permutations[l][i-1]; // na quarta posição em diante recebe o vetor passado -1, pois ele está descolado
                         // uma função a menos que o auxiliar por ter recebido o zero
                  }
-                for(i=1;i<=generator->num_city-1;i++){ // CONTANTE 9 A SER DEFINIDA
-                    if(generator->vectorAux[i+1]!=0){
+                for(i=1;i<=g->number_of_cities-1;i++){ // CONTANTE 9 A SER DEFINIDA
+                    if(g->vector_Aux[i+1]!=0){
                         // verifica se o proximo numero não é zero, ou seja não está no final.
                         // caso não ele inverte os números de posição andado com o zero.
-                        aux = generator->vectorAux[i];
-                        generator->vectorAux[i] = generator->vectorAux[i+1];
-                        generator->vectorAux[i+1] = aux;
+                        aux = g->vector_Aux[i];
+                        g->vector_Aux[i] = g->vector_Aux[i+1];
+                        g->vector_Aux[i+1] = aux;
                     }
-                    for(j=0;j<=generator->num_city+(last+4);j++){
-                        generator->arrayAux1[generator->aux2][j] = generator->vectorAux[j];
+                    for(j=0;j<=g->number_of_cities+(last+4);j++){
+                        g->array_Combinations[g->number_of_combinations][j] = g->vector_Aux[j];
                     }
-                    generator->aux2++;
+                    g->number_of_combinations++;
                 }
             }
         }else{
-         for(l=0;l<generator->aux;l++){
-                for(i=0;i<=generator->num_city+last+2;i++){
-                    if(i<2)
-                        generator->vectorAux[i] = generator->array_combinations[l][i]; //copia o vetor passado normalmente no vertor auxilixar
-                     else if(i==2)
-                         generator->vectorAux[i] = 0; // insere 0 na terceira posição
+         for(l=0;l<g->number_of_permutations;l++){
+                for(i=0;i<=g->number_of_cities+last+2;i++){
+                    if(g->permutations[l][i] == 0){
+                        cont++;
+                        position=i+2;
+                    }
+                    if(i<position && last >= cont)
+                        g->vector_Aux[i] = g->permutations[l][i]; //copia o vetor passado normalmente no vertor auxilixar
+                     else if(i==position)
+                         g->vector_Aux[i] = 0; // insere 0 na terceira posição
                      else
-                        generator->vectorAux[i] = generator->array_combinations[l][i-1]; // na quarta posição em diante recebe o vetor passado -1, pois ele está descolado
+                        g->vector_Aux[i] = g->permutations[l][i-1]; // na quarta posição em diante recebe o vetor passado -1, pois ele está descolado
                         // uma função a menos que o auxiliar por ter recebido o zero
                  }
-                for(i=1;i<=generator->num_city-1;i++){ // CONTANTE 9 A SER DEFINIDA
-                    if(generator->vectorAux[i+1]!=0){
-                        // verifica se o proximo numero não é zero, ou seja não está no final.
-                        // caso não ele inverte os números de posição andado com o zero.
-                        aux = generator->vectorAux[i];
-                        generator->vectorAux[i] = generator->vectorAux[i+1];
-                        generator->vectorAux[i+1] = aux;
+                for(i=5;i<g->number_of_cities-last;i++){
+                        aux = g->vector_Aux[i];
+                        g->vector_Aux[i] = g->vector_Aux[i+1];
+                        g->vector_Aux[i+1] = aux;
+
+                    for(j=0;j<=g->number_of_cities+(last+4);j++){
+                        g->array_Combinations[g->number_of_combinations][j] = g->vector_Aux[j];
+                        printf(" %d ", g->array_Combinations[g->number_of_combinations][j]);
                     }
-                    for(j=0;j<=generator->num_city+(last+4);j++){
-                        generator->arrayAux1[generator->aux2][j] = generator->vectorAux[j];
-                    }
-                    generator->aux2++;
+                    printf("\n");
+                    g->number_of_combinations++;
                 }
             }
     }
 
-    //free(generator->array_combinations);
-    //generator->array_combinations = (int**)malloc(generator->aux2*sizeof(int*));
-    //generator->aux=0;
-    for(i=0;i<generator->aux;i++){
-        //generator->array_combinations[i] = (int*)malloc((generator->num_city+(last+1))*sizeof(int));
-        for(j=0;j<30;j++){
-             generator->array_combinations[i][j] = generator->arrayAux1[i][j];
+    //free(g->array_combinations);
+    //g->array_combinations = (int**)malloc(g->aux2*sizeof(int*));
+    //g->aux=0;
+    for(i=0;i<g->number_of_permutations;i++){
+        for(j=0;j<g->number_of_cities+last+3;j++){
+             g->permutations[i][j] = g->array_Combinations[i][j];
+             printf(" %d ", g->permutations[i][j]);
         }
-        //generator->aux++;
+        printf("\n");
+        //g->aux++;
     }
-    //generator->aux2=0;
-    last++;
-    return last;
+    //g->aux2=0;
 }
 
 
 
 /*void generateCombination(TGenerator* generator, unsigned int N, unsigned int k) {
     static level = -1;
-    level = level+1; generator->vectorAux[k] = level;
+    level = level+1; generator->vector_Aux[k] = level;
     int i;
 
     if (level == N){
              for (i = 0; i < N; i++) {
                 generator->array_combinations[generator->aux] = (int*)malloc((N)*sizeof(int));
                 for (i = 0; i < N; i++) {
-                    generator->array_combinations[generator->aux][i] = generator->vectorAux[i];
+                    generator->array_combinations[generator->aux][i] = generator->vector_Aux[i];
                    // generator->array_combinations[generator->aux][(2*i)] = -1;
                 }
                 generator->array_combinations[generator->aux][i] = -2;
@@ -246,24 +283,24 @@ unsigned long int Fatorial(unsigned long int n){
     return n*Fatorial(n-1);
 }
 
-int generateRoute(TGenerator* generator){
+int generateRoute(Generator* g, unsigned int p){
     int i, j;
-	unsigned int last_city, current_city = generator->array_combinations[0][0], acumulator = 0, comparator = 0, melhor = 0;
-	for (i = 1; i < generator->num_city + 3; i++){
+	unsigned int last_city, current_city = g->permutations[0][0], acumulator = 0, comparator = 0, melhor = 0;
+	for (i = 1; i < g->number_of_cities + 3; i++){
 		last_city = current_city;
-		if(current_city != -2 && generator->array_combinations[0][i] != -2){
-            current_city = generator->array_combinations[0][i];
-            acumulator += generator->array_distances[last_city][current_city];
+		if(current_city != -2 && g->permutations[0][i] != -2){
+            current_city = g->permutations[0][i];
+            acumulator += g->distances[last_city][current_city];
 		}
 	}
 	comparator = acumulator;	//Atribui a comparator um valor inicial como se a primeira permutação fosse a melhor
-	for (i = 1; i < Fatorial(generator->num_city); i++) {
+	for (i = 1; i < p; i++) {
 		acumulator = 0;
-		for (j = 1; j < generator->num_city + 2; j++) {
-			last_city = generator->array_combinations[i][j-1];
-            if(current_city != -2 && generator->array_combinations[i][j] != -2){
-                current_city = generator->array_combinations[i][j];
-                acumulator += generator->array_distances[last_city][current_city];
+		for (j = 1; j < g->number_of_cities + 2; j++) {
+			last_city = g->permutations[i][j-1];
+            if(current_city != -2 && g->permutations[i][j] != -2){
+                current_city = g->permutations[i][j];
+                acumulator += g->permutations[last_city][current_city];
 			}
 		}
 		if(acumulator < comparator){
@@ -272,5 +309,5 @@ int generateRoute(TGenerator* generator){
 		}
 	}
 
-    return generator->array_combinations[melhor];
+    return g->permutations[melhor];
 }
