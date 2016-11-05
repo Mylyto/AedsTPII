@@ -205,7 +205,7 @@ void generateCombinations(Generator* g, int last){
                         g->vector_Aux[i+1] = aux;
                     }
                     for(j=0;j<=g->number_of_cities+(last+4);j++){
-                        g->array_Combinations[g->number_of_combinations][j] = g->vector_Aux[j]; // atribui a linha do vetor na matriz combinação
+                        g->combinations[g->number_of_combinations][j] = g->vector_Aux[j]; // atribui a linha do vetor na matriz combinação
                     }
                     g->number_of_combinations++; // incrementa o contador 'universal' do array
                 }
@@ -214,14 +214,12 @@ void generateCombinations(Generator* g, int last){
             for(j=0;j<g->number_of_cities+last+3;j++){
                 if(i >= g->number_of_permutations)
                     g->permutations[i] = (int *)malloc((g->number_of_cities*3)*sizeof(int));
-                 g->permutations[i][j] = g->array_Combinations[i][j]; // atribui as combinações zeradas com os zeros na matriz permutação
-                 printf(" %d ", g->array_Combinations[i][j]);
+                 g->permutations[i][j] = g->combinations[i][j]; // atribui as combinações zeradas com os zeros na matriz permutação
+                 printf(" %d ", g->combinations[i][j]);
             }
             printf("\n");
     }
         }else{
-
-            // ERRO FUNÇÃO não funciona
             // IDEIA: Sabe-se que se há 2 caminhões deve haver 2 zeros antes do ultimo zero ex:
             // 012034560 ... tal que se usar o numero de caminhões para contar esses zeros sabemos onde mover
             // logo enquanto não encontrar o segundo zero a matriz se repete... 012...
@@ -255,7 +253,7 @@ void generateCombinations(Generator* g, int last){
                     if(g->vector_Aux[i+1]==0)
                         break;
                         for(j=0;j<=g->number_of_cities+(last+4);j++){
-                            g->array_Combinations[g->number_of_combinations][j] = g->vector_Aux[j];
+                            g->combinations[g->number_of_combinations][j] = g->vector_Aux[j];
                         }
                             aux = g->vector_Aux[i];
                             g->vector_Aux[i] = g->vector_Aux[i+1];
@@ -270,7 +268,7 @@ void generateCombinations(Generator* g, int last){
                 //Sabe-se que o vetor possui normlamente além da combinação mais 3 casas, tal que 123 ->
                 // 01230-2 para dizer o final do vetor, logo a cada last, ou seja há uma insersão a mais de casa no vetor,
                  //logo 01230-2 -> 010230-2
-                 g->permutations[i][j] = g->array_Combinations[i][j];
+                 g->permutations[i][j] = g->combinations[i][j];
                  // Transfere as combinações para a matriz de permutações
                  // Sobre escrevendo as antigas permutações de 01234560 para 010234560
                  printf(" %d ", g->permutations[i][j]);
@@ -289,15 +287,13 @@ unsigned long int Fatorial(unsigned long int n){
 
 //GERA AS ROTAS E VERIFICA AS DEMANDAS
 int generateRoute(Generator* g, CityStack* cs){
-    int i, j, condition = 0, capacity = 0, k, l;
+    int i, j, capacity = 0;
 	unsigned int last_city, current_city = g->permutations[0][0], acumulator = 0, comparator = 0, melhor = 0;
 	//PEGANDO AS DEMANDAS DAS CIDADES
     g->vector_Aux[0]=0;
 	for(i=1;i<=g->number_of_cities;i++){
         g->vector_Aux[i] = g->cities[i-1].requirements;
 	}
-
-     do{
         for (i = 1; i < g->number_of_cities + 3; i++){
             last_city = current_city;
             if(current_city != -2 && g->permutations[0][i] != -2){
@@ -326,10 +322,12 @@ int generateRoute(Generator* g, CityStack* cs){
             capacity += g->vector_Aux[g->permutations[melhor][j]];
             printf(" %d ", capacity); // conta a capacidade até encontrar um zero
             if(capacity > g->truck_capacity){
-                    printf("ROTA SUPEROU A CAPACIDADE %d\n", capacity);
+                    printf("\nROTA SUPEROU A CAPACIDADE %d\n", capacity);
+                    g->permutations[melhor][0] = -1;
+                    printf(" %d ", g->permutations[melhor][0]);
+                    break;
             }
         }
-    }while(condition);
 
     return g->permutations[melhor];
 }

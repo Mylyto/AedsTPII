@@ -5,7 +5,7 @@
 #include "city.h"
 #include "citystack.h"
 #define MAX 100
-#define MAXX 1000
+#define MAXX 10000
 typedef struct{
 	Truck *trucks;
 	City *cities;
@@ -15,7 +15,7 @@ typedef struct{
 	unsigned int number_of_trucks;
 	unsigned int truck_capacity;
 	unsigned int vector_Aux[MAX];
-	unsigned int array_Combinations[MAXX][MAX];
+	unsigned int combinations[MAXX][MAX];
 	unsigned int distances[MAX][MAX];
 	int **permutations;
 }Generator;
