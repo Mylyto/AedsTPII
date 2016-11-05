@@ -3,7 +3,8 @@
 #include "generator.h"
 
 int main(){
-    int num = 6;
+    srand(time(NULL));
+    int num = 5;
     Generator g;
     initGenerator(&g,num);
     return 0;
