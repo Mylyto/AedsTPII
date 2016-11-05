@@ -1,7 +1,7 @@
 #ifndef CITY_H_INCLUDED
 #define CITY_H_INCLUDED
 
-#define MAX 1000
+#define MAX 200
 typedef struct{
 	unsigned int demand;
 	unsigned int visitd;

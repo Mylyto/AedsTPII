@@ -2,7 +2,8 @@
 #define TRUCK_H_INCLUDED
 
 #include "route.h"
-#define MAX 1000
+#define MAX 200
+
 typedef struct{
     unsigned int capacity;
     TRoute route; // todos os caminhões terão uma rota única.

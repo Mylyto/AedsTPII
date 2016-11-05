@@ -16,6 +16,7 @@ void initGenerator(TGenerator* generator, TListCity* listCity, TListRoute* listR
     generator->num_truck = 1;
     generator->capacity_truck =0;
     generator->aux = 0;
+    generator->aux2 = 0;
 
     for(i=0;i<generator->num_city;i++){
         initCity(&cidade, i);
@@ -39,7 +40,7 @@ void initGenerator(TGenerator* generator, TListCity* listCity, TListRoute* listR
     }
     possibility = Fatorial(num_city);
     generator->array_combinations = (int**)malloc(possibility*sizeof(int*));
-    //for(i=1;i<=num_city;i++){
+    //for(i=3;i<=num_city;i++){
         generateCombination(1, generator, num_city);
     //}
 
@@ -91,7 +92,7 @@ int generateCapacity(TGenerator* generator, TListCity* listCity, unsigned int co
     generator->capacity_truck = capacity_Truck;
     //VERIFICAR O RETORNO DO I.
     //generator->capacity_truck = capacity_Truck;
-    return capacity_Truck; // Retorna a capacidade de caminhões
+    return generator->num_truck; // Retorna a quantidade de caminhões
 }
 
 
@@ -134,6 +135,81 @@ void generateCombination(int nivel, TGenerator* generator, int K){
 }
 
 
+int mover(TGenerator* generator, int last ){
+    //Last é usado para dize quantos caminhões serão. Ex, last = 2 quer dizer que deve haver 3 zeros 010230
+    // Mas last depende de um vetor nessa primeira implmentação, ou seja executa a sua primeira versão com 1
+    // e guarda a matriz, executa a sua segunda função com 2 caminhões e gusrda a sua matriz
+    // executa a sua função com a matriz guardada na ultima excução e gera uma nova matriz.
+    int i,j,l,  aux, cont=0, position=0, condition=0;
+        if(last == 1){//Primeira Execução
+            for(l=0;l<generator->aux;l++){
+                for(i=0;i<=generator->num_city+3;i++){
+                    if(i<2)
+                        generator->vectorAux[i] = generator->array_combinations[l][i]; //copia o vetor passado normalmente no vertor auxilixar
+                     else if(i==2)
+                         generator->vectorAux[i] = 0; // insere 0 na terceira posição
+                     else
+                        generator->vectorAux[i] = generator->array_combinations[l][i-1]; // na quarta posição em diante recebe o vetor passado -1, pois ele está descolado
+                        // uma função a menos que o auxiliar por ter recebido o zero
+                 }
+                for(i=1;i<=generator->num_city-1;i++){ // CONTANTE 9 A SER DEFINIDA
+                    if(generator->vectorAux[i+1]!=0){
+                        // verifica se o proximo numero não é zero, ou seja não está no final.
+                        // caso não ele inverte os números de posição andado com o zero.
+                        aux = generator->vectorAux[i];
+                        generator->vectorAux[i] = generator->vectorAux[i+1];
+                        generator->vectorAux[i+1] = aux;
+                    }
+                    for(j=0;j<=generator->num_city+(last+4);j++){
+                        generator->arrayAux1[generator->aux2][j] = generator->vectorAux[j];
+                    }
+                    generator->aux2++;
+                }
+            }
+        }else{
+         for(l=0;l<generator->aux;l++){
+                for(i=0;i<=generator->num_city+last+2;i++){
+                    if(i<2)
+                        generator->vectorAux[i] = generator->array_combinations[l][i]; //copia o vetor passado normalmente no vertor auxilixar
+                     else if(i==2)
+                         generator->vectorAux[i] = 0; // insere 0 na terceira posição
+                     else
+                        generator->vectorAux[i] = generator->array_combinations[l][i-1]; // na quarta posição em diante recebe o vetor passado -1, pois ele está descolado
+                        // uma função a menos que o auxiliar por ter recebido o zero
+                 }
+                for(i=1;i<=generator->num_city-1;i++){ // CONTANTE 9 A SER DEFINIDA
+                    if(generator->vectorAux[i+1]!=0){
+                        // verifica se o proximo numero não é zero, ou seja não está no final.
+                        // caso não ele inverte os números de posição andado com o zero.
+                        aux = generator->vectorAux[i];
+                        generator->vectorAux[i] = generator->vectorAux[i+1];
+                        generator->vectorAux[i+1] = aux;
+                    }
+                    for(j=0;j<=generator->num_city+(last+4);j++){
+                        generator->arrayAux1[generator->aux2][j] = generator->vectorAux[j];
+                    }
+                    generator->aux2++;
+                }
+            }
+    }
+
+    //free(generator->array_combinations);
+    //generator->array_combinations = (int**)malloc(generator->aux2*sizeof(int*));
+    //generator->aux=0;
+    for(i=0;i<generator->aux;i++){
+        //generator->array_combinations[i] = (int*)malloc((generator->num_city+(last+1))*sizeof(int));
+        for(j=0;j<30;j++){
+             generator->array_combinations[i][j] = generator->arrayAux1[i][j];
+        }
+        //generator->aux++;
+    }
+    //generator->aux2=0;
+    last++;
+    return last;
+}
+
+
+
 /*void generateCombination(TGenerator* generator, unsigned int N, unsigned int k) {
     static level = -1;
     level = level+1; generator->vectorAux[k] = level;
@@ -173,18 +249,22 @@ unsigned long int Fatorial(unsigned long int n){
 int generateRoute(TGenerator* generator){
     int i, j;
 	unsigned int last_city, current_city = generator->array_combinations[0][0], acumulator = 0, comparator = 0, melhor = 0;
-	for (i = 0; i < generator->num_city+1; i++){
+	for (i = 1; i < generator->num_city + 3; i++){
 		last_city = current_city;
-		current_city = generator->array_combinations[0][i];
-		acumulator += generator->array_distances[last_city][current_city];
+		if(current_city != -2 && generator->array_combinations[0][i] != -2){
+            current_city = generator->array_combinations[0][i];
+            acumulator += generator->array_distances[last_city][current_city];
+		}
 	}
 	comparator = acumulator;	//Atribui a comparator um valor inicial como se a primeira permutação fosse a melhor
-	for (i = 0; i < Fatorial(generator->num_city); i++) {
+	for (i = 1; i < Fatorial(generator->num_city); i++) {
 		acumulator = 0;
-		for (j = 0; j < generator->num_city+1; j++) {
+		for (j = 1; j < generator->num_city + 2; j++) {
 			last_city = generator->array_combinations[i][j-1];
-			current_city = generator->array_combinations[i][j];
-			acumulator += generator->array_distances[last_city][current_city];
+            if(current_city != -2 && generator->array_combinations[i][j] != -2){
+                current_city = generator->array_combinations[i][j];
+                acumulator += generator->array_distances[last_city][current_city];
+			}
 		}
 		if(acumulator < comparator){
 			comparator = acumulator;

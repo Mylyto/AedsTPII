@@ -2,11 +2,11 @@
 #define ROUTE_H_INCLUDED
 
 #include "city.h"
-#define MAX 1000
+#define MAX 200
 
 //A rota possui um vetor de cidades pela a qual ela percorre
 typedef struct{
-    TCity cities[100];
+    TCity cities[MAX];
     unsigned int endDemand; // demanda total da rota
     unsigned int topo; // num de cidades na rota
     unsigned int theSize; // o tamanho da rota

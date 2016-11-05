@@ -1,5 +1,6 @@
 #include <stdio.h>
 #include <stdlib.h>
+#include <time.h>
 
 #include "city.h"
 #include "truck.h"
@@ -7,8 +8,9 @@
 #include "generator.h"
 
 int main(){
-    int num = 5, i, j, possibilty=0, qtd;
+    int num = 4, i, j, possibilty=0, qtd;
     int *vec;
+    srand(time(NULL));
     TGenerator gerador;
 
 
@@ -29,9 +31,9 @@ int main(){
 
     for(i=0;i<gerador.aux;i++){
         for(j=0;j<num+(num*2);j++){
-          if(gerador.array_combinations[i][j] == -2)
-                break;
             printf(" %d ", gerador.array_combinations[i][j]);
+            if(gerador.array_combinations[i][j] == -2)
+                break;
         }
         printf("\n");
     }
@@ -44,7 +46,44 @@ printf("\n");
 printf("CAPACIDADE Q QUANTIDADE DE CAMINHÕES: ");
 
     qtd = generateCapacity(&gerador, &listaCidade, 0);
-    printf("%d %d %d", qtd, gerador.capacity_truck, gerador.num_truck);
+    printf("%d %d %d\n", qtd, gerador.capacity_truck, gerador.num_truck);
+    qtd = generateCapacity(&gerador, &listaCidade, qtd-1);
+    printf("%d %d %d\n", qtd, gerador.capacity_truck, gerador.num_truck);
+
+    mover(&gerador, 1);
+ printf("\n");
+
+    for(i=0;i<gerador.aux2;i++){
+        for(j=0;j<num+(num*2);j++){
+            printf(" %d ", gerador.arrayAux1[i][j]);
+            if(gerador.arrayAux1[i][j] == -2)
+                break;
+        }
+        printf("\n");
+    }
+
+   mover(&gerador, 2);
+    printf("SEGUNDA\n");
+        for(i=0;i<gerador.aux;i++){
+            for(j=0;j<num+(num*2);j++){
+                printf(" %d ", gerador.array_combinations[i][j]);
+                if(gerador.array_combinations[i][j] == -2)
+                    break;
+            }
+            printf("\n");
+        }
+        printf("\n");
+
+            for(i=0;i<gerador.aux2;i++){
+        for(j=0;j<num+(num*2);j++){
+            printf(" %d ", gerador.arrayAux1[i][j]);
+            if(gerador.arrayAux1[i][j] == -2)
+                break;
+        }
+        printf("\n");
+    }
+
+
 
     return 0;
 }
