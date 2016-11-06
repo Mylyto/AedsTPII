@@ -117,7 +117,7 @@ void generateDistances(Generator* g){
             if(i<j)
                 g->distances[i][j] = rand()%100+1;
             else if(i>j)
-                g->distances[i][j] = g->distances[j][i];
+                g->distances[i][j] = g->distances[j][i]; // ESPELHA A MATRIZ
             else // if (i==j)
                 g->distances[i][j] = 0;
         }
@@ -133,7 +133,8 @@ void generateDistances(Generator* g){
 
 //GERADOR DE CAPACIDADE CO DAMINHÃO
 void generateTrucks(Generator* g, CityStack* cs, int condition){
-//CONDITION É PADRÃO COMO ZERO
+//CONDITION É PADRÃO COMO ZERO, caso CONDITIONS DIFERENTE DE ZERO INDICA QUE QUER UM MULTIPLO, TAL QUE DEVE SER MENOR QUE O NUMERO ANTERIOR
+// OU SEJA, SE O ULTIMO MULTIPLO FOI 4 DEVE-SE PASSAR CONTITION 3 PARA RETORNAR O PRÓXIMO MULTIPLO, PODENDO SER 3 OU 2 OU 1.
     int i = 1,  sumDemand, capacity_Truck, maximum, lastDivisor;
     sumDemand = cs->endRequirements; //ṕega o somatório da demanda de todas as cidades.
     maximum = cs->greater_Requirements; // Pega a maior demanda de uma punica ciadade.
@@ -211,9 +212,9 @@ void generateCombinations(Generator* g, int last){
                 }
             }
         for(i=0;i<g->number_of_combinations;i++){
-            for(j=0;j<g->number_of_cities+last+3;j++){
+            for(j=0;j<g->number_of_cities+last+3;j++){// Las
                 if(i >= g->number_of_permutations)
-                    g->permutations[i] = (int *)malloc((g->number_of_cities*3)*sizeof(int));
+                    g->permutations[i] = (int *)malloc((g->number_of_cities*3)*sizeof(int)); // Se acavar o vetor tal que devemos alocar mais memoria
                  g->permutations[i][j] = g->combinations[i][j]; // atribui as combinações zeradas com os zeros na matriz permutação
                  printf(" %d ", g->combinations[i][j]);
             }
@@ -249,7 +250,7 @@ void generateCombinations(Generator* g, int last){
                         g->vector_Aux[i] = g->permutations[l][i-1]; // na quarta posição em diante recebe o vetor passado -1, pois ele está descolado
                         // uma função a menos que o auxiliar por ter recebido o zero
                  }
-                for(i=position;i<g->number_of_cities+3;i++){
+                for(i=position;i<g->number_of_cities+last+3;i++){
                     if(g->vector_Aux[i+1]==0)
                         break;
                         for(j=0;j<=g->number_of_cities+(last+4);j++){
@@ -262,7 +263,7 @@ void generateCombinations(Generator* g, int last){
                 }
             }
         for(i=0;i<g->number_of_combinations;i++){
-            for(j=0;j<g->number_of_cities+last+3;j++){
+            for(j=0;j<g->number_of_cities+last+3;j++){//Last é o numero de casas a mais do vetor, com o acrécimo de zeros.
                 if(i >= g->number_of_permutations)
                     g->permutations[i] = (int *)malloc((g->number_of_cities*3)*sizeof(int));
                 //Sabe-se que o vetor possui normlamente além da combinação mais 3 casas, tal que 123 ->
@@ -294,7 +295,7 @@ int generateRoute(Generator* g, CityStack* cs){
 	for(i=1;i<=g->number_of_cities;i++){
         g->vector_Aux[i] = g->cities[i-1].requirements;
 	}
-        for (i = 1; i < g->number_of_cities + 3; i++){
+        for (i = 1; i < g->number_of_cities+g->number_of_trucks+2; i++){//Numeros de caminhões diz quantos zeros há a mais na linha da matriz, além dos 2 por padõres
             last_city = current_city;
             if(current_city != -2 && g->permutations[0][i] != -2){
                 current_city = g->permutations[0][i];
@@ -304,7 +305,7 @@ int generateRoute(Generator* g, CityStack* cs){
         comparator = acumulator;	//Atribui a comparator um valor inicial como se a primeira permutação fosse a melhor
         for (i = 1; i < g->number_of_permutations; i++) {
             acumulator = 0;
-            for (j = 1; j < g->number_of_cities + 2; j++) {
+            for (j = 1; j < g->number_of_cities+g->number_of_trucks+1; j++) {
                 last_city = g->permutations[i][j-1];
                 if(current_city != -2 && g->permutations[i][j] != -2){
                     current_city = g->permutations[i][j];
@@ -316,14 +317,14 @@ int generateRoute(Generator* g, CityStack* cs){
                 melhor = i;
             }
         }
-        for(j=0;j<g->number_of_cities+4;j++){
+        for(j=0;j<g->number_of_cities+g->number_of_trucks+1;j++){
             if(g->permutations[melhor][j]==0) // Verifica se não há zero, tal que 0120 é uma capacidade e 03450 é outra
                 capacity = 0;
             capacity += g->vector_Aux[g->permutations[melhor][j]];
             printf(" %d ", capacity); // conta a capacidade até encontrar um zero
             if(capacity > g->truck_capacity){
                     printf("\nROTA SUPEROU A CAPACIDADE %d\n", capacity);
-                    g->permutations[melhor][0] = -1;
+                    g->permutations[melhor][0] = -1; // tenta dizer que aquela linha é nula.
                     printf(" %d ", g->permutations[melhor][0]);
                     break;
             }
