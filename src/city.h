@@ -1,4 +1,3 @@
-
 #ifndef CITY_H
 #define CITY_H
 #include <time.h>

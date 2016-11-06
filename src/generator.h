@@ -35,7 +35,4 @@ int generatePermutation(int nivel, Generator* g, int n);
 void generateCities(Generator* g, CityStack* cs);
 void generateCombinations(Generator* g, int last);
 int generateRoute(Generator* g, CityStack* cs);
-
-
-
 #endif

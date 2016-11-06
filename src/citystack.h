@@ -15,5 +15,4 @@ void initCityStack(CityStack* cs);
 void push(CityStack* cs,City c);
 void pop(CityStack* cs,City* c);
 unsigned int size(CityStack* cs);
-
 #endif
