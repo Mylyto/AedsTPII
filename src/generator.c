@@ -329,7 +329,7 @@ int generateRoute(Generator* g, int **bestRoute){
                 comparator[comp_top] = acumulator;	//Insere ao final(como o melhor)
 		melhor[comp_top++] = i;
             }
-	    else if(acumulator < comparator[comp_top - 2]){
+	    else if(comp_top > 1 && acumulator < comparator[comp_top - 2]){
 		last_comp_keep = comparator[comp_top - 1];	//Insere na penultima posição(como segundo melhor)
 	    	comparator[comp_top - 1] = acumulator;
 		last_best_keep = melhor[comp_top - 1];
@@ -354,6 +354,5 @@ int generateRoute(Generator* g, int **bestRoute){
 	    }
         }
     	*bestRoute =  g->permutations[melhor[comp_top - 1]];
-	printf ("é aqui mesmo!\n");
 	return 1;
 }
