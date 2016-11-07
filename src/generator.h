@@ -27,7 +27,7 @@ void initGenerator(Generator* g, unsigned int n); // inicializa o gerador
 unsigned long int Fatorial(unsigned long int n); // calcula fatorial recursivo
 //parãmetros N - numero de cidades
 
-int generatePermutation(int nivel, Generator* g, int n); // gera permutações recursivas
+void generatePermutation(unsigned int nivel, Generator* g,unsigned int n); // gera permutações recursivas
 // nivel - auxiliar da recursividade, g-onde tem a matriz de permutação e auxiliar, N- permutação de qto em qto
 
 void generateCities(Generator* g, CityStack* cs); // gera cidades e demanda

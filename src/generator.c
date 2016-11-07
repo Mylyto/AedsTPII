@@ -52,9 +52,10 @@ void initGenerator(Generator* g, unsigned int n){
 }
 
 //GERA TODAS AS PERMUTAÇÕES
-int generatePermutation(int nivel, Generator* g, int n){
+void generatePermutation(unsigned int nivel, Generator* g, unsigned int n){
 // nivel, da recursão e K é permutar de quantas casas ex: 3 cidade de K=1 seria [1] [2] [3];
-    int i, j, parada = 0, *vec_temp; // Vetor temporário para auxiliar a bagunça;
+    unsigned int i, j, parada = 0;
+    int *vec_temp; // Vetor temporário para auxiliar a bagunça;
     vec_temp = (int*)malloc((n*2)*sizeof(int)); //Aloca dinâmicamente para usar o vetor auxiliar.
     if (nivel<=n) {
         for (i=1; i<=g->number_of_cities; i++) {
@@ -82,7 +83,7 @@ int generatePermutation(int nivel, Generator* g, int n){
                  g->permutations[g->number_of_permutations] = (int *)malloc((n*3)*sizeof(int));
                  for(j = 0; j <= i+1; j++){ // A martiz de combinações recebe todos os numeros gerados na recursão
                     g->permutations[g->number_of_permutations][j] = vec_temp[j];
-                    printf(" %d ", g->permutations[g->number_of_permutations][j]);
+                    printf(" %d ", g->permutations[g->number_of_permutations][j]);	//PRINTANDO PERMUTAÇõES
                  }
                  free(vec_temp); // Desaloca o vetor temporario;
                  g->number_of_permutations++; // incrementa o contador 'universal'
@@ -136,8 +137,8 @@ void generateTrucks(Generator* g, CityStack* cs, int condition){
 //CONDITION É PADRÃO COMO ZERO, caso CONDITIONS DIFERENTE DE ZERO INDICA QUE QUER UM MULTIPLO, TAL QUE DEVE SER MENOR QUE O NUMERO ANTERIOR
 // OU SEJA, SE O ULTIMO MULTIPLO FOI 4 DEVE-SE PASSAR CONTITION 3 PARA RETORNAR O PRÓXIMO MULTIPLO, PODENDO SER 3 OU 2 OU 1.
     int i = 1,  sumDemand, capacity_Truck, maximum, lastDivisor;
-    sumDemand = cs->endRequirements; //ṕega o somatório da demanda de todas as cidades.
-    maximum = cs->greater_Requirements; // Pega a maior demanda de uma punica ciadade.
+    sumDemand = cs->end_requirements; //ṕega o somatório da demanda de todas as cidades.
+    maximum = cs->greater_requirements; // Pega a maior demanda de uma punica ciadade.
     if(condition==0){
          while(1){ // sempre executado
             if(sumDemand%i == 0){ // se o somatorio é divisível por i então
@@ -288,10 +289,10 @@ unsigned long int Fatorial(unsigned long int n){
 
 //GERA AS ROTAS E VERIFICA AS DEMANDAS
 int generateRoute(Generator* g, CityStack* cs){
-    int i, j, capacity = 0;
+	int i, j, capacity = 0;
 	unsigned int last_city, current_city = g->permutations[0][0], acumulator = 0, comparator = 0, melhor = 0;
 	//PEGANDO AS DEMANDAS DAS CIDADES
-    g->vector_Aux[0]=0;
+    	g->vector_Aux[0]=0;
 	for(i=1;i<=g->number_of_cities;i++){
         g->vector_Aux[i] = g->cities[i-1].requirements;
 	}
@@ -329,8 +330,7 @@ int generateRoute(Generator* g, CityStack* cs){
                     break;
             }
         }
-
-    return g->permutations[melhor];
+    	return g->permutations[melhor];
 }
 
 
