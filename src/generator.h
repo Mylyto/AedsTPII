@@ -1,13 +1,10 @@
 #ifndef GENERATOR_H
 #define GENERATOR_H
-#include "path.h"
-#include "truck.h"
 #include "city.h"
 #include "citystack.h"
 #define MAX 100
 #define MAXX 10000
 typedef struct{
-	Truck *trucks;
 	City *cities;
 	unsigned int number_of_permutations; // contator de quantos linhas tem a permutação
 	unsigned int number_of_cities;
@@ -42,12 +39,12 @@ void generatePermutation(unsigned int nivel, Generator* g,unsigned int n); // ge
 void generateCities(Generator* g, CityStack* cs); // gera cidades e demanda
 // g-> gerador para armazenar as cidades no vetor  cs-> para colocá-las em uma lista
 
-void generateCombinations(Generator* g, int last); // gera combinações com zeros
+void generateCombinations(Generator* g, unsigned int last); // gera combinações com zeros
 //g-> gerador, onde estãos as matrizes de permutação, combinação e o vetor auxiliar
 //last-> é o numero de caminhões -1, usado para determinar qtos zeros deve haver
 ///LEMBRE-SE: laste deve começar com 0, depois 1, depois 2, depois 3... pois ele gera em cima do resultado gerado
 
-int generateRoute(Generator* g, CityStack* cs); // gera rotas e calcula a demanda e menor rota
+int *generateRoute(Generator* g); // gera rotas e calcula a demanda e menor rota
 
 
 

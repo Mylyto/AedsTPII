@@ -10,7 +10,7 @@
 
 //INICIALIZA O GERADOR
 void initGenerator(Generator* g, unsigned int n){
-    unsigned int i,j,possibility;
+    unsigned int i,possibility = 0;
     int *bestRoute;
     CityStack cs;
     n-=1;
@@ -27,7 +27,7 @@ void initGenerator(Generator* g, unsigned int n){
     generateTrucks(g,&cs,0); // gera a capacidade do caminhão e a quatidade de caminhões
     for(i=0; i<g->number_of_trucks;i++)
         generateCombinations(g,i); // GERA COMBINAÇÕES COM ZEROS
-    bestRoute=generateRoute(g, &cs); // ESCOLHE A MELHOR ROTA
+    bestRoute=generateRoute(g); // ESCOLHE A MELHOR ROTA
 
     //EXIBRE A MELHOR ROTA.
     for(i=0;i<=g->number_of_cities+(3+g->number_of_trucks);i++){
@@ -95,7 +95,7 @@ void generatePermutation(unsigned int nivel, Generator* g, unsigned int n){
 //GERA AS CIDADES IDS E DEMANDAS
 void generateCities(Generator* g, CityStack* cs){
     City c;
-    int i;
+    unsigned int i;
     initCityStack(cs); // inicializa a pilha de cidades
     g->cities = (City*)malloc(g->number_of_cities*sizeof(City)); // aloca o vetor de cidades
     for(i=0;i<g->number_of_cities;i++){
@@ -175,12 +175,12 @@ void generateTrucks(Generator* g, CityStack* cs, int condition){
 }
 
 //GERAND COMBINAÇÕES COM ZEROS
-void generateCombinations(Generator* g, int last){
+void generateCombinations(Generator* g, unsigned int last){
     //Last é usado para dize quantos caminhões serão. Ex, last = 2 quer dizer que deve haver 3 zeros 010230
     // Mas last depende de um vetor nessa primeira implmentação, ou seja executa a sua primeira versão com 1
     // e guarda a matriz, executa a sua segunda função com 2 caminhões e gusrda a sua matriz
     // executa a sua função com a matriz guardada na ultima excução e gera uma nova matriz.
-    int i,j,l,  aux, cont=0, position=0, condition=0;
+    unsigned int i,j,l,  aux, cont=0, position=0;
     g->number_of_combinations = 0;
 
     if(last == 0){
@@ -286,9 +286,10 @@ unsigned long int Fatorial(unsigned long int n){
 }
 
 //GERA AS ROTAS E VERIFICA AS DEMANDAS
-int generateRoute(Generator* g, CityStack* cs){
-	int i, j, capacity = 0;
-	unsigned int last_city, current_city = g->permutations[0][0], acumulator = 0, comparator = 0, melhor = 0;
+int *generateRoute(Generator* g){
+	int current_city = g->permutations[0][0];
+	unsigned int last_city, acumulator = 0, comparator = 0, melhor = 0, i, j, capacity = 0;
+
 	//PEGANDO AS DEMANDAS DAS CIDADES
     	g->vector_Aux[0]=0;
 	for(i=1;i<=g->number_of_cities;i++){
