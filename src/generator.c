@@ -1,6 +1,5 @@
 #include <stdio.h>
 #include <stdlib.h>
-
 #include "generator.h"
 
 //Iniciar GERADOR
@@ -8,39 +7,35 @@
 // A MATRIZ DE COMBINAÇÕES // GERAR O NUMERO DE CAMINHÕES
 // E JÁ GERAR A MELHOR ROTA DE TAL FORMA QUE O NUM DE CAMINHÕES SEJA
 
-//INICIALIZA O GERADOR
-void initGenerator(Generator* g, unsigned int n){
-    unsigned int i,possibility = 0;
-    int *bestRoute;
-    CityStack cs;
-    n-=1;
-    g->number_of_cities = n;
-    g->number_of_combinations = 0;
-    g->number_of_permutations = 0;
-    g->truck_capacity = 0;
-    generateCities(g, &cs);//Gerando as cidades e q=guardando-as na na Stack e no gerador
-    generateDistances(g);//Gerando a Matriz de distancias
-    for(i=0;i<=n;i++){
-        possibility += Fatorial(i);//Calculando as possibilidades máximas de alocação de memória
-    }
-    g->permutations = (int**)malloc(possibility*sizeof(int*));//Alocando memória suficiente para a matiz de permutações
-    generatePermutation(1, g, n);//gerando recursivamente as permutações recursivamente.
-    generateTrucks(g,&cs,0); // gera a capacidade do caminhão e a quatidade de caminhões
-    for(i=0; i<g->number_of_trucks;i++){
-        generateCombinations(g,i); // GERA COMBINAÇÕES COM ZEROS
-    }
-    while(!generateRoute(g,&bestRoute)){ // ESCOLHE A MELHOR ROTA
-	generateTrucks(g,&cs,g->number_of_trucks-1);
-	for (i = 0; i < g->number_of_permutations; i++) {
-		free(g->permutations[i]);
+//INICIALIZA O GERADOR 5
+void initGenerator(Generator* g){
+	g->truck_capacity = 50;
+	unsigned int i,possibility = 0;
+	int *bestRoute;
+	g->vector_Aux = (unsigned int*)malloc(MAX*sizeof(unsigned int));
+	g->combinations = (int**)malloc(MAXX*sizeof(unsigned int*));
+	for (i = 0; i < MAX; i++) {
+		g->combinations[i] = (int*)malloc(MAX*sizeof(unsigned int));
 	}
-	generatePermutation(1,g,n);
+	CityStack cs;
+	g->number_of_cities = 0;
+	g->number_of_combinations = 0;
+	g->number_of_permutations = 0;
+	generateCities(g, &cs);//Apenas ENTRADA
+	generateDistances(g);//Apenas ENTRADA
+	while(!generateTrucks(g,&cs)){
+		generateCities(g,&cs);
+	}
+	for(i=0;i<=g->number_of_cities;i++){
+		possibility += Fatorial(i);//Calculando as possibilidades máximas de alocação de memória
+	}
+	g->permutations = (int**)malloc(possibility*sizeof(int*));//Alocando memória suficiente para a matiz de permutações
+	generatePermutation(1, g);//gerando recursivamente as permutações recursivamente.
 	for(i=0; i<g->number_of_trucks;i++){
 		generateCombinations(g,i); // GERA COMBINAÇÕES COM ZEROS
 	}
-    }
-
-    //EXIBRE A MELHOR ROTA.
+	generateRoute(g,&bestRoute);
+    //EXIBE A MELHOR ROTA.
     for(i=0;i<=g->number_of_cities+(3+g->number_of_trucks);i++){
         if(bestRoute[i]==-2){
             break;
@@ -102,14 +97,19 @@ void generatePermutation(unsigned int nivel, Generator* g, unsigned int n){
         }
 }
 
-//GERA AS CIDADES IDS E DEMANDAS
+//GERA AS CIDADES IDS E DEMANDAS 2
 void generateCities(Generator* g, CityStack* cs){
     City c;
     unsigned int i;
+    unsigned int req;
     initCityStack(cs); // inicializa a pilha de cidades
     g->cities = (City*)malloc(g->number_of_cities*sizeof(City)); // aloca o vetor de cidades
     for(i=0;i<g->number_of_cities;i++){
-        initCity(&c); // inicializa a cidade
+	scanf("%u",&req);
+        while(!initCity(g,&c,req)){ // inicializa a cidade
+		printf("Valor Inválido!\nMotivo: Superior a capacidade dos caminhões\n");
+		scanf("%u",&req);
+	}
         push(cs, c); // insere a cidade na pilha
     }
     for(i=0;i<g->number_of_cities;i++){
@@ -119,7 +119,7 @@ void generateCities(Generator* g, CityStack* cs){
 
 }
 
-//CRIA A MATRIZ DE DISTÂNCIAS
+//CRIA A MATRIZ DE DISTÂNCIAS 3
 void generateDistances(Generator* g){
     unsigned int i, j;
     //gerar Distancias espelhadas
@@ -142,49 +142,16 @@ void generateDistances(Generator* g){
 
 }
 
-//GERADOR DE CAPACIDADE CO CAMINHÃO
-void generateTrucks(Generator* g, CityStack* cs, int condition){
-//CONDITION É PADRÃO COMO ZERO, caso CONDITIONS DIFERENTE DE ZERO INDICA QUE QUER UM MULTIPLO, TAL QUE DEVE SER MENOR QUE O NUMERO ANTERIOR
-// OU SEJA, SE O ULTIMO MULTIPLO FOI 4 DEVE-SE PASSAR CONdITION 3 PARA RETORNAR O PRÓXIMO MULTIPLO, PODENDO SER 3 OU 2 OU 1.
-    unsigned int i = 1,  capacity_Truck, lastDivisor;
-    if(condition==0){
-         while(1){
-            if(cs->end_requirements % i == 0){ // se o somatorio é divisível por i então
-                if(cs->greater_requirements > (cs->end_requirements / i)){ // se a divisão desse somatório é menor que a maior demanda então
-                    if(i==2)// se forem dois caminhões
-                        capacity_Truck = cs->end_requirements; // a capacidade do caminhão gerará um unico caminhão de capacidade máxima
-                    else
-                        capacity_Truck = cs->end_requirements / lastDivisor;// caso contrário a capacidade do caminhão receberá
-                        // o ultimo divisor de i cuja o maximum era menor que a demanda dividida por i
-                    break; // interrompe o loop;
-                }else{
-                    lastDivisor = i;
-                    i++;// caso a maior demanda não seja maior que a demanda dividida por i, esse i é guardado
-                    // e o while continua a rodar;
-                }
-            }else{
-                i++;
-            }
-        }
-    }else{
-    // caso o condition seja diferente de ZERO, ou seja recebe o valor de UMA unidade a menos
-    // de caminhões que foi insificiente para fazer a rota para gerar um multiplo maior que o menor multiplo possível
-        i = condition;
-        while(1){
-            if(cs->end_requirements % i == 0){ // se i é divisível,
-                capacity_Truck = cs->end_requirements / i;
-                break;
-            }else{ // caso contrário continua no loop a procura do mair multiplo acima do menor multiplo possível
-                i--;
-            }
-        }
-    }
-    g->number_of_trucks = cs->end_requirements / capacity_Truck; // numero de caminhão é dado pela disião
-    g->truck_capacity = capacity_Truck;
-    printf("\ntrucks: %d capacity: %d\n", g->number_of_trucks, g->truck_capacity);
+//GERA QUANTIDADE DE CAMINHÃO
+int generateTrucks(Generator* g, CityStack* cs){
+	if(cs->end_requirements % g->truck_capacity == 0){
+		g->number_of_trucks = cs->end_requirements/g->truck_capacity;
+		return 1;
+	}
+	return 0;
 }
 
-//GERAND COMBINAÇÕES COM ZEROS
+//GERAND COMBINAÇÕES COM ZEROS 9
 void generateCombinations(Generator* g, unsigned int last){
     //Last é usado para dize quantos caminhões serão. Ex, last = 2 quer dizer que deve haver 3 zeros 010230
     // Mas last depende de um vetor nessa primeira implmentação, ou seja executa a sua primeira versão com 1
@@ -193,6 +160,7 @@ void generateCombinations(Generator* g, unsigned int last){
     unsigned int i,j,l,a,  aux, cont=0, position=0;
 
     if(last == 0){
+	    g->number_of_combinations = g->number_of_permutations;
     }else if(last == 1){//Primeira Execução
 	    g->number_of_combinations = 0;
 		for(l=0;l<g->number_of_permutations;l++){

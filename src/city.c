@@ -1,9 +1,13 @@
 #include "city.h"
 static int city_IDs = 0;
-void initCity(City* c){
-	c->requirements = ((rand()%100)+1)*10;
+int initCity(Generator *g,City* c,unsigned int req){
+	if(req > g->truck_capacity){
+		return 0;
+	}
+	c->requirements = req;
 	c->met_requirements = 0;
 	c->id = city_IDs++;
+	return 1;
 }
 void meetRequirements(City* c){
 	c->met_requirements = 1;
