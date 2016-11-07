@@ -20,14 +20,18 @@ void initGenerator(Generator* g, unsigned int n){
     g->truck_capacity = 0;
     generateCities(g, &cs);//Gerando as cidades e q=guardando-as na na Stack e no gerador
     generateDistances(g);//Gerando a Matriz de distancias
-    for(i=0;i<=n;i++)
+    for(i=0;i<=n;i++){
         possibility += Fatorial(i);//Calculando as possibilidades máximas de alocação de memória
+    }
     g->permutations = (int**)malloc(possibility*sizeof(int*));//Alocando memória suficiente para a matiz de permutações
     generatePermutation(1, g, n);//gerando recursivamente as permutações recursivamente.
     generateTrucks(g,&cs,0); // gera a capacidade do caminhão e a quatidade de caminhões
-    for(i=0; i<g->number_of_trucks;i++)
+    for(i=0; i<g->number_of_trucks;i++){
         generateCombinations(g,i); // GERA COMBINAÇÕES COM ZEROS
-    bestRoute=generateRoute(g); // ESCOLHE A MELHOR ROTA
+    }
+    while(!generateRoute(g,&bestRoute)){ // ESCOLHE A MELHOR ROTA
+	generateTrucks(g,&cs,g->number_of_trucks);
+    }
 
     //EXIBRE A MELHOR ROTA.
     for(i=0;i<=g->number_of_cities+(3+g->number_of_trucks);i++){
@@ -111,7 +115,7 @@ void generateCities(Generator* g, CityStack* cs){
 
 //CRIA A MATRIZ DE DISTÂNCIAS
 void generateDistances(Generator* g){
-    int i, j;
+    unsigned int i, j;
     //gerar Distancias espelhadas
     for(i=0;i<=g->number_of_cities;i++){
         for(j=0;j<=g->number_of_cities;j++){
@@ -286,11 +290,12 @@ unsigned long int Fatorial(unsigned long int n){
 }
 
 //GERA AS ROTAS E VERIFICA AS DEMANDAS
-int *generateRoute(Generator* g){
+int generateRoute(Generator* g, int **bestRoute){
 	int current_city = g->permutations[0][0];
-	unsigned int last_city, acumulator = 0, comparator = 0, melhor = 0, i, j, capacity = 0;
+	unsigned int last_city, acumulator = 0, *comparator, comp_top = 0, *melhor, i, j, capacity = 0, last_comp_keep, last_best_keep;
 
 	//PEGANDO AS DEMANDAS DAS CIDADES
+	
     	g->vector_Aux[0]=0;
 	for(i=1;i<=g->number_of_cities;i++){
         g->vector_Aux[i] = g->cities[i-1].requirements;
@@ -302,7 +307,9 @@ int *generateRoute(Generator* g){
                 acumulator += g->distances[last_city][current_city];
             }
         }
-        comparator = acumulator;	//Atribui a comparator um valor inicial como se a primeira permutação fosse a melhor
+	melhor[0] = 0;
+        comparator[0] = acumulator;	//Atribui a comparator um valor inicial como se a primeira permutação fosse a melhor
+	comp_top = 1;
         for (i = 1; i < g->number_of_permutations; i++) {
             acumulator = 0;
             for (j = 1; j < g->number_of_cities+g->number_of_trucks+1; j++) {
@@ -312,24 +319,35 @@ int *generateRoute(Generator* g){
                     acumulator += g->distances[last_city][current_city];
                 }
             }
-            if(acumulator < comparator){
-                comparator = acumulator;
-                melhor = i;
+            if(acumulator < comparator[comp_top - 1]){
+                comparator[comp_top] = acumulator;	//Insere ao final(como o melhor)
+		melhor[comp_top++] = i;
             }
+	    else if(acumulator < comparator[comp_top - 2]){
+		last_comp_keep = comparator[comp_top - 1];	//Insere na penultima posição(como segundo melhor)
+	    	comparator[comp_top - 1] = acumulator;
+		last_best_keep = melhor[comp_top - 1];
+		melhor[comp_top - 1] = i;
+		comparator[comp_top] = last_comp_keep;
+		melhor[comp_top++] = last_best_keep;
+	    }
         }
-        for(j=0;j<g->number_of_cities+g->number_of_trucks+1;j++){
-            if(g->permutations[melhor][j]==0) // Verifica se não há zero, tal que 0120 é uma capacidade e 03450 é outra
+        for(i=0;i<g->number_of_cities+g->number_of_trucks+1;i++){
+            if(g->permutations[melhor[comp_top - 1]][i]==0) // Verifica se não há zero, tal que 0120 é uma capacidade e 03450 é outra
                 capacity = 0;
-            capacity += g->vector_Aux[g->permutations[melhor][j]];
+            capacity += g->vector_Aux[g->permutations[melhor[comp_top - 1]][i]];
             printf(" %d ", capacity); // conta a capacidade até encontrar um zero
-            if(capacity > g->truck_capacity){
-                    printf("\nROTA SUPEROU A CAPACIDADE %d\n", capacity);
-                    g->permutations[melhor][0] = -1; // tenta dizer que aquela linha é nula.
-                    printf(" %d ", g->permutations[melhor][0]);
-                    break;
+            if(capacity > g->truck_capacity && comp_top > 1){
+		    comp_top--;	//recomeça porem testando a combinação um pouco pior em nivel de distancia
+		    i = 0;
+		    capacity = 0;
             }
+	    else if (capacity > g->truck_capacity){
+	    	return 0;	//exigira um numero de caminhoes inferior
+	    }
         }
-    	return g->permutations[melhor];
+    	*bestRoute =  g->permutations[melhor[comp_top - 1]];
+	return 1;
 }
 
 

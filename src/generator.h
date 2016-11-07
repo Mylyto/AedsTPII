@@ -44,7 +44,7 @@ void generateCombinations(Generator* g, unsigned int last); // gera combinaçõe
 //last-> é o numero de caminhões -1, usado para determinar qtos zeros deve haver
 ///LEMBRE-SE: laste deve começar com 0, depois 1, depois 2, depois 3... pois ele gera em cima do resultado gerado
 
-int *generateRoute(Generator* g); // gera rotas e calcula a demanda e menor rota
+int generateRoute(Generator* g, int **bestRoute); // gera rotas e calcula a demanda e menor rota
 
 
 
