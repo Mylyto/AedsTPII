@@ -12,7 +12,7 @@ typedef struct{
 	unsigned int number_of_trucks;
 	unsigned int truck_capacity;
 	unsigned int vector_Aux[MAX]; // vetor 'universal' para usar em recursões etc.
-	unsigned int combinations[MAXX][MAX]; // matriz para guardar as combinações de ZEROS
+	int combinations[MAXX][MAX]; // matriz para guardar as combinações de ZEROS
 	unsigned int distances[MAX][MAX]; // matriz prar armazenar as distâncias entre as cidades.
 	int **permutations; // ponteiro de ponteiros para armazenar as permutações geradas, posteriormente as combinações.
 }Generator;

@@ -26,9 +26,10 @@ void initGenerator(Generator* g, unsigned int n){
     g->permutations = (int**)malloc(possibility*sizeof(int*));//Alocando memória suficiente para a matiz de permutações
     generatePermutation(1, g, n);//gerando recursivamente as permutações recursivamente.
     generateTrucks(g,&cs,0); // gera a capacidade do caminhão e a quatidade de caminhões
-    for(i=0; i<g->number_of_trucks;i++){
+    for(i=0; i<3;i++){
         generateCombinations(g,i); // GERA COMBINAÇÕES COM ZEROS
     }
+    /*
     while(!generateRoute(g,&bestRoute)){ // ESCOLHE A MELHOR ROTA
 	generateTrucks(g,&cs,g->number_of_trucks);
     }
@@ -52,6 +53,7 @@ void initGenerator(Generator* g, unsigned int n){
         }
 
    }
+	*/
 
 }
 
@@ -215,9 +217,10 @@ void generateCombinations(Generator* g, unsigned int last){
                 }
             }
         for(i=0;i<g->number_of_combinations;i++){
-            for(j=0;j<g->number_of_cities+last+3;j++){// Las
-                if(i >= g->number_of_permutations)
+                if(i >= g->number_of_permutations){
                     g->permutations[i] = (int *)malloc((g->number_of_cities*3)*sizeof(int)); // Se acavar o vetor tal que devemos alocar mais memoria
+		}
+            for(j=0;j<g->number_of_cities+last+3;j++){// Las
                  g->permutations[i][j] = g->combinations[i][j]; // atribui as combinações zeradas com os zeros na matriz permutação
                  printf(" %d ", g->combinations[i][j]);
             }
@@ -266,9 +269,10 @@ void generateCombinations(Generator* g, unsigned int last){
                 }
             }
         for(i=0;i<g->number_of_combinations;i++){
-            for(j=0;j<g->number_of_cities+last+3;j++){//Last é o numero de casas a mais do vetor, com o acrécimo de zeros.
-                if(i >= g->number_of_permutations)
+                if(i >= g->number_of_permutations){
                     g->permutations[i] = (int *)malloc((g->number_of_cities*3)*sizeof(int));
+		}
+            for(j=0;j<g->number_of_cities+last+3;j++){//Last é o numero de casas a mais do vetor, com o acrécimo de zeros.
                 //Sabe-se que o vetor possui normlamente além da combinação mais 3 casas, tal que 123 ->
                 // 01230-2 para dizer o final do vetor, logo a cada last, ou seja há uma insersão a mais de casa no vetor,
                  //logo 01230-2 -> 010230-2
@@ -293,12 +297,13 @@ unsigned long int Fatorial(unsigned long int n){
 int generateRoute(Generator* g, int **bestRoute){
 	int current_city = g->permutations[0][0];
 	unsigned int last_city, acumulator = 0, *comparator, comp_top = 0, *melhor, i, j, capacity = 0, last_comp_keep, last_best_keep;
-
+	melhor = (unsigned int*)malloc(g->number_of_combinations*sizeof(unsigned int));
+	comparator = (unsigned int*)malloc(g->number_of_combinations*sizeof(unsigned int));
 	//PEGANDO AS DEMANDAS DAS CIDADES
 	
     	g->vector_Aux[0]=0;
 	for(i=1;i<=g->number_of_cities;i++){
-        g->vector_Aux[i] = g->cities[i-1].requirements;
+		g->vector_Aux[i] = g->cities[i-1].requirements;
 	}
         for (i = 1; i < g->number_of_cities+g->number_of_trucks+2; i++){//Numeros de caminhões diz quantos zeros há a mais na linha da matriz, além dos 2 por padõres
             last_city = current_city;
@@ -310,7 +315,7 @@ int generateRoute(Generator* g, int **bestRoute){
 	melhor[0] = 0;
         comparator[0] = acumulator;	//Atribui a comparator um valor inicial como se a primeira permutação fosse a melhor
 	comp_top = 1;
-        for (i = 1; i < g->number_of_permutations; i++) {
+        for (i = 1; i < g->number_of_combinations; i++) {
             acumulator = 0;
             for (j = 1; j < g->number_of_cities+g->number_of_trucks+1; j++) {
                 last_city = g->permutations[i][j-1];
