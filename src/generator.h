@@ -20,6 +20,15 @@ typedef struct{
 	int **permutations; // ponteiro de ponteiros para armazenar as permutações geradas, posteriormente as combinações.
 }Generator;
 
+void generateTrucks(Generator* g, CityStack* cs, int condition);
+//CONDITION É PADRÃO COMO ZERO, caso CONDITIONS DIFERENTE DE ZERO INDICA QUE QUER UM MULTIPLO, TAL QUE DEVE SER MENOR QUE O NUMERO ANTERIOR
+// OU SEJA, SE O ULTIMO MULTIPLO FOI 4 DEVE-SE PASSAR CONdITION 3 PARA RETORNAR O PRÓXIMO MULTIPLO, PODENDO SER 3 OU 2 OU 1.
+
+void generateDistances(Generator* g);
+//função q ira gerar a matriz de distancias
+
+void generateCities(Generator* g, CityStack* cs);
+//função q ira gerar as demandas das cidades
 
 void initGenerator(Generator* g, unsigned int n); // inicializa o gerador
 // parãmetros G- gerador N - numero de cidades

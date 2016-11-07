@@ -6,6 +6,7 @@
 #include "truck.h"
 #include "generator.h"
 #include "citystack.h"
+
 //teste para TAD truck
 START_TEST(test_truck_create){
 	Truck t;

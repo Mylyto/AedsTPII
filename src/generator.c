@@ -10,7 +10,7 @@
 
 //INICIALIZA O GERADOR
 void initGenerator(Generator* g, unsigned int n){
-    int i,j,possibility;
+    unsigned int i,j,possibility;
     int *bestRoute;
     CityStack cs;
     n-=1;
@@ -132,21 +132,19 @@ void generateDistances(Generator* g){
 
 }
 
-//GERADOR DE CAPACIDADE CO DAMINHÃO
+//GERADOR DE CAPACIDADE CO CAMINHÃO
 void generateTrucks(Generator* g, CityStack* cs, int condition){
 //CONDITION É PADRÃO COMO ZERO, caso CONDITIONS DIFERENTE DE ZERO INDICA QUE QUER UM MULTIPLO, TAL QUE DEVE SER MENOR QUE O NUMERO ANTERIOR
-// OU SEJA, SE O ULTIMO MULTIPLO FOI 4 DEVE-SE PASSAR CONTITION 3 PARA RETORNAR O PRÓXIMO MULTIPLO, PODENDO SER 3 OU 2 OU 1.
-    int i = 1,  sumDemand, capacity_Truck, maximum, lastDivisor;
-    sumDemand = cs->end_requirements; //ṕega o somatório da demanda de todas as cidades.
-    maximum = cs->greater_requirements; // Pega a maior demanda de uma punica ciadade.
+// OU SEJA, SE O ULTIMO MULTIPLO FOI 4 DEVE-SE PASSAR CONdITION 3 PARA RETORNAR O PRÓXIMO MULTIPLO, PODENDO SER 3 OU 2 OU 1.
+    unsigned int i = 1,  capacity_Truck, lastDivisor;
     if(condition==0){
-         while(1){ // sempre executado
-            if(sumDemand%i == 0){ // se o somatorio é divisível por i então
-                if(maximum > (sumDemand/i)){ // se a divisão desse somatório é menor que a maior demanda então
+         while(1){
+            if(cs->end_requirements % i == 0){ // se o somatorio é divisível por i então
+                if(cs->greater_requirements > (cs->end_requirements / i)){ // se a divisão desse somatório é menor que a maior demanda então
                     if(i==2)// se forem dois caminhões
-                        capacity_Truck = sumDemand; // a capacidade do caminhão gerará um unico caminhão de capacidade máxima
+                        capacity_Truck = cs->end_requirements; // a capacidade do caminhão gerará um unico caminhão de capacidade máxima
                     else
-                        capacity_Truck = sumDemand/lastDivisor;// caso contrário a capacidade do caminhão receberá
+                        capacity_Truck = cs->end_requirements / lastDivisor;// caso contrário a capacidade do caminhão receberá
                         // o ultimo divisor de i cuja o maximum era menor que a demanda dividida por i
                     break; // interrompe o loop;
                 }else{
@@ -163,15 +161,15 @@ void generateTrucks(Generator* g, CityStack* cs, int condition){
     // de caminhões que foi insificiente para fazer a rota para gerar um multiplo maior que o menor multiplo possível
         i = condition;
         while(1){
-            if(sumDemand%i == 0){ // se i é divisível,
-                capacity_Truck = sumDemand/i;
+            if(cs->end_requirements % i == 0){ // se i é divisível,
+                capacity_Truck = cs->end_requirements / i;
                 break;
             }else{ // caso contrário continua no loop a procura do mair multiplo acima do menor multiplo possível
                 i--;
             }
         }
     }
-    g->number_of_trucks = sumDemand/capacity_Truck; // numero de caminhão é dado pela disião
+    g->number_of_trucks = cs->end_requirements / capacity_Truck; // numero de caminhão é dado pela disião
     g->truck_capacity = capacity_Truck;
     printf("\ntrucks: %d capacity: %d\n", g->number_of_trucks, g->truck_capacity);
 }
