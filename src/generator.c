@@ -31,6 +31,13 @@ void initGenerator(Generator* g, unsigned int n){
     }
     while(!generateRoute(g,&bestRoute)){ // ESCOLHE A MELHOR ROTA
 	generateTrucks(g,&cs,g->number_of_trucks-1);
+	for (i = 0; i < g->number_of_permutations; i++) {
+		free(g->permutations[i]);
+	}
+	generatePermutation(1,g,n);
+	for(i=0; i<g->number_of_trucks;i++){
+		generateCombinations(g,i); // GERA COMBINAÇÕES COM ZEROS
+	}
     }
 
     //EXIBRE A MELHOR ROTA.
