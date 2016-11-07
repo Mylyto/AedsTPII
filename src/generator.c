@@ -8,52 +8,23 @@
 // E JÁ GERAR A MELHOR ROTA DE TAL FORMA QUE O NUM DE CAMINHÕES SEJA
 
 //INICIALIZA O GERADOR 5
-void initGenerator(Generator* g){
-	g->truck_capacity = 50;
-	unsigned int i,possibility = 0;
+int initGenerator(Generator* g, unsigned int n){
+	unsigned int i, j,possibility;
 	int *bestRoute;
-	g->vector_Aux = (unsigned int*)malloc(MAX*sizeof(unsigned int));
-	g->combinations = (int**)malloc(MAXX*sizeof(unsigned int*));
-	for (i = 0; i < MAX; i++) {
-		g->combinations[i] = (int*)malloc(MAX*sizeof(unsigned int));
-	}
 	CityStack cs;
-	g->number_of_cities = 0;
+
+	g->number_of_cities = n;
 	g->number_of_combinations = 0;
 	g->number_of_permutations = 0;
-	generateCities(g, &cs);//Apenas ENTRADA
-	generateDistances(g);//Apenas ENTRADA
-	while(!generateTrucks(g,&cs)){
-		generateCities(g,&cs);
-	}
-	for(i=0;i<=g->number_of_cities;i++){
-		possibility += Fatorial(i);//Calculando as possibilidades máximas de alocação de memória
-	}
-	g->permutations = (int**)malloc(possibility*sizeof(int*));//Alocando memória suficiente para a matiz de permutações
-	generatePermutation(1, g);//gerando recursivamente as permutações recursivamente.
-	for(i=0; i<g->number_of_trucks;i++){
-		generateCombinations(g,i); // GERA COMBINAÇÕES COM ZEROS
-	}
-	generateRoute(g,&bestRoute);
-    //EXIBE A MELHOR ROTA.
-    for(i=0;i<=g->number_of_cities+(3+g->number_of_trucks);i++){
-        if(bestRoute[i]==-2){
-            break;
-        }else if (i==0){
-            printf("[");
-           printf(" %d ", bestRoute[i]);
-        }else if (bestRoute[i]==0 && bestRoute[i+1]!=-2){
-            printf(" %d ", bestRoute[i]);
-            printf("][");
-            printf(" %d ", bestRoute[i]);
-        }else if(bestRoute[i]==0){
-            printf(" %d ", bestRoute[i]);
-            printf("]");
-        }else{
-            printf(" %d ", bestRoute[i]);
-        }
+	g->truck_capacity = 50;
+	for(i=1;i<=g->number_of_cities;i++)
+        possibility+=Fatorial(i);
+    g->permutations = (int**)malloc(possibility*sizeof(int*));
+	generatePermutation(1,g,n);
 
-   }
+        return 1;
+	/*
+	*/
 }
 
 //GERA TODAS AS PERMUTAÇÕES
@@ -86,13 +57,10 @@ void generatePermutation(unsigned int nivel, Generator* g, unsigned int n){
                  vec_temp[i+1] = -2; // critério de parada;
                  //Aloca o vetor de vetores da matriz de combinações
                  g->permutations[g->number_of_permutations] = (int *)malloc((n*3)*sizeof(int));
-                 for(j = 0; j <= i+1; j++){ // A martiz de combinações recebe todos os numeros gerados na recursão
+                 for(j = 0; j <= i+1; j++) // A martiz de combinações recebe todos os numeros gerados na recursão
                     g->permutations[g->number_of_permutations][j] = vec_temp[j];
-                    printf(" %d ", g->permutations[g->number_of_permutations][j]);	//PRINTANDO PERMUTAÇõES
-                 }
                  free(vec_temp); // Desaloca o vetor temporario;
                  g->number_of_permutations++; // incrementa o contador 'universal'
-                 printf("\n");
             }
         }
 }
@@ -100,55 +68,52 @@ void generatePermutation(unsigned int nivel, Generator* g, unsigned int n){
 //GERA AS CIDADES IDS E DEMANDAS 2
 void generateCities(Generator* g, CityStack* cs){
     City c;
-    unsigned int i;
+    int i;
     unsigned int req;
     initCityStack(cs); // inicializa a pilha de cidades
-    g->cities = (City*)malloc(g->number_of_cities*sizeof(City)); // aloca o vetor de cidades
+    //g->cities = (City*)malloc(g->number_of_cities*sizeof(City)); // aloca o vetor de cidades
     for(i=0;i<g->number_of_cities;i++){
-	scanf("%u",&req);
-        while(!initCity(g,&c,req)){ // inicializa a cidade
-		printf("Valor Inválido!\nMotivo: Superior a capacidade dos caminhões\n");
-		scanf("%u",&req);
+        scanf("%u",&req);
+        while(!initCity(&c,req)){ // inicializa a cidade
+            printf("Valor invalido, repita: ");
+            scanf("%u",&req);
 	}
         push(cs, c); // insere a cidade na pilha
     }
-    for(i=0;i<g->number_of_cities;i++){
-        g->cities[i] = cs->cities[i]; // atiribui o vetor cidade ao vetor no tad generator
-        printf("\nDemanda: %d ID: %d meet: %d\n" ,g->cities[i].requirements, g->cities[i].id, g->cities[i].met_requirements );
-    }
-
 }
 
 //CRIA A MATRIZ DE DISTÂNCIAS 3
 void generateDistances(Generator* g){
-    unsigned int i, j;
+    int i, j;
+    unsigned int temp;
     //gerar Distancias espelhadas
+    printf("Distances: \n");
     for(i=0;i<=g->number_of_cities;i++){
         for(j=0;j<=g->number_of_cities;j++){
-            if(i<j)
-                g->distances[i][j] = rand()%100+1;
-            else if(i>j)
-                g->distances[i][j] = g->distances[j][i]; // ESPELHA A MATRIZ
-            else // if (i==j)
+            if(i<j){
+                printf("Distancia de %d ate %d : ", i, j);
+                scanf("%u", &temp);
+                g->distances[i][j] =temp;
+            }
+            else if(i>j){
+                g->distances[i][j] = g->distances[j][i]; // ESPELHA A MATRIz
+            }
+                else {
                 g->distances[i][j] = 0;
+            }
         }
-    }
-    for(i=0;i<=g->number_of_cities;i++){
-        for(j=0;j<=g->number_of_cities;j++){
-               printf(" %d " , g->distances[i][j]);
-        }
-        printf("\n");
     }
 
 }
 
 //GERA QUANTIDADE DE CAMINHÃO
 int generateTrucks(Generator* g, CityStack* cs){
-	if(cs->end_requirements % g->truck_capacity == 0){
-		g->number_of_trucks = cs->end_requirements/g->truck_capacity;
-		return 1;
+	if(cs->end_Requirements % g->truck_capacity == 0){
+		g->number_of_trucks = cs->end_Requirements/g->truck_capacity;
+		return 0;
 	}
-	return 0;
+	printf("Somatorio de demandas inválido. Repita: \n");
+	return 1;
 }
 
 //GERAND COMBINAÇÕES COM ZEROS 9
@@ -161,8 +126,7 @@ void generateCombinations(Generator* g, unsigned int last){
 
     if(last == 0){
 	    g->number_of_combinations = g->number_of_permutations;
-    }else if(last == 1){//Primeira Execução
-	    g->number_of_combinations = 0;
+    }else if(last == 1){
 		for(l=0;l<g->number_of_permutations;l++){
 		    for(i=0;i<=g->number_of_cities+3;i++){
 			if(i<2){
@@ -196,21 +160,9 @@ void generateCombinations(Generator* g, unsigned int last){
 			}
 			for(j=0;j<g->number_of_cities+last+3;j++){// Las
 				g->permutations[i][j] = g->combinations[i][j]; // atribui as combinações zeradas com os zeros na matriz permutação
-				printf(" comb:%d perm:%d ", g->combinations[i][j], g->permutations[i][j]);
 			}
-			printf("\n");
 		}
 	}else{
-            // IDEIA: Sabe-se que se há 2 caminhões deve haver 2 zeros antes do ultimo zero ex:
-            // 012034560 ... tal que se usar o numero de caminhões para contar esses zeros sabemos onde mover
-            // logo enquanto não encontrar o segundo zero a matriz se repete... 012...
-            // Quando a enconta deve repetir o zero e a próxima posição. 01203, ou seja
-            // na posição+2 depois do segundo zero encontrado deve ser inserido mais um zero
-            // 012030 ... e apartir dai recebe normalmente o vetor uma posição descolada;
-            // 0120304560.
-            // Segunda ida, MOVER O ZERO INSERIDO// Deve-se guardar a posição do ultimo zero, para que
-            // a movimentação do vetor so ocorra após o zero ser inserido
-            // Ex. 0120304560 -> 0120340560 -> 0120345060 e break quando encontrar um zero final ou -2;
 	    a = g->number_of_combinations;
 	    g->number_of_combinations = 0;
          for(l=0;l<a;l++){
@@ -246,19 +198,12 @@ void generateCombinations(Generator* g, unsigned int last){
                 }
             }
         for(i=0;i<g->number_of_combinations;i++){
-                if(i >= g->number_of_permutations){
-                    g->permutations[i] = (int *)malloc((g->number_of_cities*3)*sizeof(int));
-		}
-            for(j=0;j<g->number_of_cities+last+3;j++){//Last é o numero de casas a mais do vetor, com o acrécimo de zeros.
-                //Sabe-se que o vetor possui normlamente além da combinação mais 3 casas, tal que 123 ->
-                // 01230-2 para dizer o final do vetor, logo a cada last, ou seja há uma insersão a mais de casa no vetor,
-                 //logo 01230-2 -> 010230-2
-                 g->permutations[i][j] = g->combinations[i][j];
-                 // Transfere as combinações para a matriz de permutações
-                 // Sobre escrevendo as antigas permutações de 01234560 para 010234560
-                 printf(" %d ", g->permutations[i][j]);
+            if(i >= g->number_of_permutations){
+                g->permutations[i] = (int *)malloc((g->number_of_cities*3)*sizeof(int));
             }
-            printf("\n");
+            for(j=0;j<g->number_of_cities+last+3;j++){
+                 g->permutations[i][j] = g->combinations[i][j];
+            }
         }
     }
 }

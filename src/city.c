@@ -1,7 +1,9 @@
 #include "city.h"
+
 static int city_IDs = 0;
-int initCity(Generator *g,City* c,unsigned int req){
-	if(req > g->truck_capacity){
+
+int initCity(City* c,unsigned int req){
+	if(req > 50){
 		return 0;
 	}
 	c->requirements = req;

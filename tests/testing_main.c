@@ -8,8 +8,9 @@
 //teste para TAD city
 START_TEST(test_city_create){
 	City c;
-	initCity(&c);
+	initCity(&c,5);
 	ck_assert_int_eq(getRequirements(c),c.requirements);
+	ck_assert_int_eq(getRequirements(c),5);
 	ck_assert_msg(getMetRequirements(c) == 0, "Was expecting met_requirements = 0, but received met_requirements = %d",getMetRequirements(c));
 	meetRequirements(&c);
 	ck_assert_msg(getMetRequirements(c) == 1, "Was expecting met_requirements = 1, but received met_requirements = %d",getMetRequirements(c));
@@ -23,7 +24,7 @@ START_TEST(test_citystack_create){
 	City ctemp;
 	initCityStack(&cs);
 	for (i = 0; i < 5; i++) {
-		initCity(&c[i]);
+		initCity(&c[i],i);
 		ck_assert_msg(size(&cs)==i,"Expected CityStack size %d Received %d",i,size(&cs) );
 		push(&cs,c[i]);
 	}
@@ -31,7 +32,8 @@ START_TEST(test_citystack_create){
 		ck_assert_msg(size(&cs)==i+1,"Expected CityStack size %d Received %d",i+1,size(&cs) );
 		ctemp = c[i];
 		pop(&cs,&c[i]);
-		ck_assert_msg(ctemp.requirements==c[i].requirements,"Failed during CityStack popping. Value is different from expected");
+		ck_assert_msg(i==c[i].requirements,"Failed during CityStack popping. Value is different from expected");
+		ck_assert_msg(size(&cs)==i,"Expected CityStack size %d Received %d",i,size(&cs) );
 	}
 }
 END_TEST
