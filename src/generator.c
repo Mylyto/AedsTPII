@@ -26,12 +26,11 @@ void initGenerator(Generator* g, unsigned int n){
     g->permutations = (int**)malloc(possibility*sizeof(int*));//Alocando memória suficiente para a matiz de permutações
     generatePermutation(1, g, n);//gerando recursivamente as permutações recursivamente.
     generateTrucks(g,&cs,0); // gera a capacidade do caminhão e a quatidade de caminhões
-    for(i=0; i<3;i++){
+    for(i=0; i<g->number_of_trucks;i++){
         generateCombinations(g,i); // GERA COMBINAÇÕES COM ZEROS
     }
-    /*
     while(!generateRoute(g,&bestRoute)){ // ESCOLHE A MELHOR ROTA
-	generateTrucks(g,&cs,g->number_of_trucks);
+	generateTrucks(g,&cs,g->number_of_trucks-1);
     }
 
     //EXIBRE A MELHOR ROTA.
@@ -53,8 +52,6 @@ void initGenerator(Generator* g, unsigned int n){
         }
 
    }
-	*/
-
 }
 
 //GERA TODAS AS PERMUTAÇÕES
@@ -186,47 +183,49 @@ void generateCombinations(Generator* g, unsigned int last){
     // Mas last depende de um vetor nessa primeira implmentação, ou seja executa a sua primeira versão com 1
     // e guarda a matriz, executa a sua segunda função com 2 caminhões e gusrda a sua matriz
     // executa a sua função com a matriz guardada na ultima excução e gera uma nova matriz.
-    unsigned int i,j,l,  aux, cont=0, position=0;
-    g->number_of_combinations = 0;
+    unsigned int i,j,l,a,  aux, cont=0, position=0;
 
     if(last == 0){
-
     }else if(last == 1){//Primeira Execução
-            for(l=0;l<g->number_of_permutations;l++){
-                for(i=0;i<=g->number_of_cities+3;i++){
-                    if(i<2)
-                        g->vector_Aux[i] = g->permutations[l][i]; //copia o vetor passado normalmente no vertor auxilixar
-                     else if(i==2)
-                         g->vector_Aux[i] = 0; // insere 0 na terceira posição
-                     else
-                        g->vector_Aux[i] = g->permutations[l][i-1]; // na quarta posição em diante recebe o vetor passado -1, pois ele está descolado
-                        // uma função a menos que o auxiliar por ter recebido o zero
-                 }
-                for(i=1;i<=g->number_of_cities-1;i++){
-                    if(g->vector_Aux[i+1]!=0){
-                        // verifica se o proximo numero não é zero, ou seja não está no final.
-                        // caso não ele inverte os números de posição andado com o zero.
-                        aux = g->vector_Aux[i];
-                        g->vector_Aux[i] = g->vector_Aux[i+1];
-                        g->vector_Aux[i+1] = aux;
-                    }
-                    for(j=0;j<=g->number_of_cities+(last+4);j++){
-                        g->combinations[g->number_of_combinations][j] = g->vector_Aux[j]; // atribui a linha do vetor na matriz combinação
-                    }
-                    g->number_of_combinations++; // incrementa o contador 'universal' do array
-                }
-            }
-        for(i=0;i<g->number_of_combinations;i++){
-                if(i >= g->number_of_permutations){
-                    g->permutations[i] = (int *)malloc((g->number_of_cities*3)*sizeof(int)); // Se acavar o vetor tal que devemos alocar mais memoria
+	    g->number_of_combinations = 0;
+		for(l=0;l<g->number_of_permutations;l++){
+		    for(i=0;i<=g->number_of_cities+3;i++){
+			if(i<2){
+				g->vector_Aux[i] = g->permutations[l][i]; //copia o vetor passado normalmente no vertor auxilixar
+			}
+			 else if(i==2){
+				 g->vector_Aux[i] = 0; // insere 0 na terceira posição
+			 }
+			 else{
+				g->vector_Aux[i] = g->permutations[l][i-1]; // na quarta posição em diante recebe o vetor passado -1, pois ele está descolado
+			 }
+			// uma função a menos que o auxiliar por ter recebido o zero
+		     }
+		    for(i=1;i<=g->number_of_cities-1;i++){
+			if(g->vector_Aux[i+1]!=0){
+				// verifica se o proximo numero não é zero, ou seja não está no final.
+				// caso não ele inverte os números de posição andado com o zero.
+				aux = g->vector_Aux[i];
+				g->vector_Aux[i] = g->vector_Aux[i+1];
+				g->vector_Aux[i+1] = aux;
+			}
+			for(j=0;j<=g->number_of_cities+(last+4);j++){
+				g->combinations[g->number_of_combinations][j] = g->vector_Aux[j]; // atribui a linha do vetor na matriz combinação
+			}
+			g->number_of_combinations++; // incrementa o contador 'universal' do array
+		    }
 		}
-            for(j=0;j<g->number_of_cities+last+3;j++){// Las
-                 g->permutations[i][j] = g->combinations[i][j]; // atribui as combinações zeradas com os zeros na matriz permutação
-                 printf(" %d ", g->combinations[i][j]);
-            }
-            printf("\n");
-    }
-        }else{
+		for(i=0;i<g->number_of_combinations;i++){
+			if(i >= g->number_of_permutations){
+			    g->permutations[i] = (int *)malloc((g->number_of_cities*3)*sizeof(int)); // Se acavar o vetor tal que devemos alocar mais memoria
+			}
+			for(j=0;j<g->number_of_cities+last+3;j++){// Las
+				g->permutations[i][j] = g->combinations[i][j]; // atribui as combinações zeradas com os zeros na matriz permutação
+				printf(" comb:%d perm:%d ", g->combinations[i][j], g->permutations[i][j]);
+			}
+			printf("\n");
+		}
+	}else{
             // IDEIA: Sabe-se que se há 2 caminhões deve haver 2 zeros antes do ultimo zero ex:
             // 012034560 ... tal que se usar o numero de caminhões para contar esses zeros sabemos onde mover
             // logo enquanto não encontrar o segundo zero a matriz se repete... 012...
@@ -237,7 +236,9 @@ void generateCombinations(Generator* g, unsigned int last){
             // Segunda ida, MOVER O ZERO INSERIDO// Deve-se guardar a posição do ultimo zero, para que
             // a movimentação do vetor so ocorra após o zero ser inserido
             // Ex. 0120304560 -> 0120340560 -> 0120345060 e break quando encontrar um zero final ou -2;
-         for(l=0;l<g->number_of_permutations;l++){
+	    a = g->number_of_combinations;
+	    g->number_of_combinations = 0;
+         for(l=0;l<a;l++){
                 cont=0; position=0;
                 for(i=0;i<=g->number_of_cities+last+2;i++){
                     if(g->permutations[l][i] == 0){
@@ -257,9 +258,10 @@ void generateCombinations(Generator* g, unsigned int last){
                         // uma função a menos que o auxiliar por ter recebido o zero
                  }
                 for(i=position;i<g->number_of_cities+last+3;i++){
-                    if(g->vector_Aux[i+1]==0)
-                        break;
-                        for(j=0;j<=g->number_of_cities+(last+4);j++){
+                    	if(g->vector_Aux[i+1]==0){
+                        	break;
+		    	}
+                	for(j=0;j<=g->number_of_cities+(last+4);j++){
                             g->combinations[g->number_of_combinations][j] = g->vector_Aux[j];
                         }
                             aux = g->vector_Aux[i];
@@ -300,9 +302,8 @@ int generateRoute(Generator* g, int **bestRoute){
 	melhor = (unsigned int*)malloc(g->number_of_combinations*sizeof(unsigned int));
 	comparator = (unsigned int*)malloc(g->number_of_combinations*sizeof(unsigned int));
 	//PEGANDO AS DEMANDAS DAS CIDADES
-	
     	g->vector_Aux[0]=0;
-	for(i=1;i<=g->number_of_cities;i++){
+	for(i=1;i<=g->number_of_cities+g->number_of_trucks+1;i++){
 		g->vector_Aux[i] = g->cities[i-1].requirements;
 	}
         for (i = 1; i < g->number_of_cities+g->number_of_trucks+2; i++){//Numeros de caminhões diz quantos zeros há a mais na linha da matriz, além dos 2 por padõres
@@ -338,8 +339,9 @@ int generateRoute(Generator* g, int **bestRoute){
 	    }
         }
         for(i=0;i<g->number_of_cities+g->number_of_trucks+1;i++){
-            if(g->permutations[melhor[comp_top - 1]][i]==0) // Verifica se não há zero, tal que 0120 é uma capacidade e 03450 é outra
+            if(g->permutations[melhor[comp_top - 1]][i]==0){ // Verifica se não há zero, tal que 0120 é uma capacidade e 03450 é outra
                 capacity = 0;
+	    }
             capacity += g->vector_Aux[g->permutations[melhor[comp_top - 1]][i]];
             printf(" %d ", capacity); // conta a capacidade até encontrar um zero
             if(capacity > g->truck_capacity && comp_top > 1){
@@ -352,8 +354,6 @@ int generateRoute(Generator* g, int **bestRoute){
 	    }
         }
     	*bestRoute =  g->permutations[melhor[comp_top - 1]];
+	printf ("é aqui mesmo!\n");
 	return 1;
 }
-
-
-
