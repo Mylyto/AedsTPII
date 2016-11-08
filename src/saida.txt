@@ -1,0 +1,1 @@
+Numeros de cidades: 5 tempo: 0.004

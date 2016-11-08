@@ -3,7 +3,7 @@
 #include "city.h"
 #include "citystack.h"
 #define MAX 100
-#define MAXX 10000
+#define MAXX 20000
 typedef struct{
 	City *cities;
 	unsigned int number_of_permutations; // contator de quantos linhas tem a permutação
@@ -14,7 +14,7 @@ typedef struct{
 	unsigned int vector_Aux[MAX]; // vetor 'universal' para usar em recursões etc.
 	unsigned int distances[MAX][MAX]; // matriz prar armazenar as distâncias entre as cidades.
 	int **permutations; // ponteiro de ponteiros para armazenar as permutações geradas, posteriormente as combinações.
-	int combinations[MAXX][MAX]; // matriz para guardar as combinações de ZEROS
+	int **combinations; // matriz para guardar as combinações de ZEROS
 }Generator;
 
 int generateTrucks(Generator* g, CityStack* cs);
