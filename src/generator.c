@@ -66,6 +66,7 @@ void generateCities(Generator* g, CityStack* cs){
     initCityStack(cs); // inicializa a pilha de cidades
     g->cities = (City*)malloc(g->number_of_cities*sizeof(City)); // aloca o vetor de cidades
     for(i=0;i<g->number_of_cities;i++){
+        printf("Demanda da cidade: ");
         scanf("%u",&req);
         while(!initCity(&c,req)){ // inicializa a cidade
             printf("Valor invalido, repita: ");
@@ -83,7 +84,6 @@ void generateDistances(Generator* g){
     int i, j;
     unsigned int temp;
     //gerar Distancias espelhadas
-    printf("Distances: \n");
     for(i=0;i<=g->number_of_cities;i++){
         for(j=0;j<=g->number_of_cities;j++){
             if(i<j){
@@ -209,11 +209,14 @@ int generateRoute(Generator* g, int **bestRoute){
 	unsigned int last_city, acumulator = 0, *comparator, comp_top = 0, *melhor, i, j, capacity = 0, last_comp_keep, last_best_keep;
 	melhor = (unsigned int*)malloc(g->number_of_combinations*sizeof(unsigned int));
 	comparator = (unsigned int*)malloc(g->number_of_combinations*sizeof(unsigned int));
+
 	//PEGANDO AS DEMANDAS DAS CIDADES
-    	g->vector_Aux[0]=0;
+    g->vector_Aux[0]=0;
 	for(i=1;i<=g->number_of_cities+g->number_of_trucks+1;i++){
 		g->vector_Aux[i] = g->cities[i-1].requirements;
 	}
+	for(i=0;i<=g->number_of_cities+g->number_of_trucks+2;i++)
+        //printf(" %d \n", g->vector_Aux[i]);
         for (i = 1; i < g->number_of_cities+g->number_of_trucks+2; i++){//Numeros de caminhões diz quantos zeros há a mais na linha da matriz, além dos 2 por padõres
             last_city = current_city;
             if(current_city != -2 && g->permutations[0][i] != -2){
@@ -221,45 +224,46 @@ int generateRoute(Generator* g, int **bestRoute){
                 acumulator += g->distances[last_city][current_city];
             }
         }
-	melhor[0] = 0;
-        comparator[0] = acumulator;	//Atribui a comparator um valor inicial como se a primeira permutação fosse a melhor
+	 melhor[0] = 0;
+    comparator[0] = acumulator;	//Atribui a comparator um valor inicial como se a primeira permutação fosse a melhor
 	comp_top = 1;
         for (i = 1; i < g->number_of_combinations; i++) {
             acumulator = 0;
-            for (j = 1; j < g->number_of_cities+g->number_of_trucks+1; j++) {
+            for (j = 1; j < g->number_of_cities+g->number_of_trucks+2; j++) {
                 last_city = g->permutations[i][j-1];
                 if(current_city != -2 && g->permutations[i][j] != -2){
                     current_city = g->permutations[i][j];
                     acumulator += g->distances[last_city][current_city];
                 }
             }
-            if(acumulator < comparator[comp_top - 1]){
+        if(acumulator < comparator[comp_top - 1]){
                 comparator[comp_top] = acumulator;	//Insere ao final(como o melhor)
-		melhor[comp_top++] = i;
+                melhor[comp_top++] = i;
             }
-	    else if(comp_top > 1 && acumulator < comparator[comp_top - 2]){
-		last_comp_keep = comparator[comp_top - 1];	//Insere na penultima posição(como segundo melhor)
+	    else if(comp_top > 1 && acumulator < comparator[comp_top - 1]){
+            last_comp_keep = comparator[comp_top - 1];	//Insere na penultima posição(como segundo melhor)
 	    	comparator[comp_top - 1] = acumulator;
-		last_best_keep = melhor[comp_top - 1];
-		melhor[comp_top - 1] = i;
-		comparator[comp_top] = last_comp_keep;
-		melhor[comp_top++] = last_best_keep;
-	    }
+            last_best_keep = melhor[comp_top - 1];
+            melhor[comp_top - 1] = i;
+            comparator[comp_top] = last_comp_keep;
+            melhor[comp_top++] = last_best_keep;
+            }
         }
         for(i=0;i<g->number_of_cities+g->number_of_trucks+1;i++){
-            if(g->permutations[melhor[comp_top - 1]][i]==0){ // Verifica se não há zero, tal que 0120 é uma capacidade e 03450 é outra
+            if(g->permutations[melhor[comp_top-1]][i]==0){ // Verifica se não há zero, tal que 0120 é uma capacidade e 03450 é outra
                 capacity = 0;
-	    }
-            capacity += g->vector_Aux[g->permutations[melhor[comp_top - 1]][i]];
-            printf(" %d ", capacity); // conta a capacidade até encontrar um zero
-            if(capacity > g->truck_capacity && comp_top > 1){
-		    comp_top--;	//recomeça porem testando a combinação um pouco pior em nivel de distancia
-		    i = 0;
-		    capacity = 0;
             }
-	    else if (capacity > g->truck_capacity){
-	    	return 0;	//exigira um numero de caminhoes inferior
-	    }
+           // printf("%d",g->permutations[melhor[comp_top-1]][i])
+            capacity += g->vector_Aux[g->permutations[melhor[comp_top - 1]][i]];
+           // printf(" %d ", capacity);
+            if(capacity > g->truck_capacity && comp_top > 1){
+                comp_top--;	//recomeça porem testando a combinação um pouco pior em nivel de distancia
+                i = 0;
+                capacity = 0;
+            }else if (capacity > g->truck_capacity){
+                *bestRoute =  g->permutations[melhor[comp_top - 1]];
+                return 0;
+            }
         }
     	*bestRoute =  g->permutations[melhor[comp_top - 1]];
 	return 1;

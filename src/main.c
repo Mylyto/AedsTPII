@@ -19,6 +19,7 @@ int main(){
 	if((exitArq = fopen("saida.txt", "w")) == NULL){
 		printf("Ocorreu erro com o arquivo(s)");
     }
+        printf("Numero de cidades: ");
         scanf("%d", &n);
            condition = initGenerator(&g, n);
             if(condition){
@@ -26,6 +27,7 @@ int main(){
                     generateCities(&g,&cs);
                     condition = generateTrucks(&g, &cs);
                 }
+                generateDistances(&g);
                 generatePermutation(1,&g,n);
                 for(i=0;i<g.number_of_trucks;i++)
                     generateCombinations(&g,i);
@@ -35,26 +37,29 @@ int main(){
                     printf("\n");
             }
 
-            /*//generateRoute(&g,&bestRoute);
+            condition = generateRoute(&g,&bestRoute);
             //EXIBE A MELHOR ROTA.
-            for(i=0;i<=g.number_of_cities+(3+g.number_of_trucks);i++){
-                if(bestRoute[i]==-2){
-                    break;
-                }else if (i==0){
-                    printf("[");
-                   printf(" %d ", bestRoute[i]);
-                }else if (bestRoute[i]==0 && bestRoute[i+1]!=-2){
-                    printf(" %d ", bestRoute[i]);
-                    printf("][");
-                    printf(" %d ", bestRoute[i]);
-                }else if(bestRoute[i]==0){
-                    printf(" %d ", bestRoute[i]);
-                    printf("]");
-                }else{
-                    printf(" %d ", bestRoute[i]);
+            if(condition){
+                for(i=0;i<=g.number_of_cities+(3+g.number_of_trucks);i++){
+                    if(bestRoute[i]==-2){
+                        break;
+                    }else if (i==0){
+                        printf("[");
+                       printf(" %d ", bestRoute[i]);
+                    }else if (bestRoute[i]==0 && bestRoute[i+1]!=-2){
+                        printf(" %d ", bestRoute[i]);
+                        printf("][");
+                        printf(" %d ", bestRoute[i]);
+                    }else if(bestRoute[i]==0){
+                        printf(" %d ", bestRoute[i]);
+                        printf("]");
+                    }else{
+                        printf(" %d ", bestRoute[i]);
+                    }
                 }
-
-           }*/
+            }else{
+                printf("NENHUMA ROTA FOI POSSIVEL");
+            }
             Ticks[1] = clock();
             tempo = ((Ticks[1] - Ticks[0])*1000.0/ CLOCKS_PER_SEC) / 1000;
             fprintf(exitArq, "Numeros de cidades: %d tempo: %.3f\n", n, tempo);
