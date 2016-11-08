@@ -1,5 +1,5 @@
 include_directories(.)
 file(GLOB LIB_SOURCES ./*.c)
 file(GLOB LIB_HEADERS ./*.h)
-add_library(CaixeiroViajanteComMochila ${LIB_SOURCES} ${LIB_HEADERS} )
+#add_library(CaixeiroViajanteComMochila ${LIB_SOURCES} ${LIB_HEADERS} )
 add_executable(RunCaixeiroViajanteComMochila ${LIB_SOURCES} ${LIB_HEADERS} )
